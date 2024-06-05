@@ -57,6 +57,9 @@ def create_index_mapping(opensearch_client, index_name):
                 "embedding": {
                     "type": "knn_vector",
                     "dimension": 1536
+                },
+                "content": {
+                    "type": "keyword"
                 }
             }
         }
@@ -64,9 +67,10 @@ def create_index_mapping(opensearch_client, index_name):
     return bool(response['acknowledged'])
 
 
-def add_document(opensearch_client, index_name, embedding):
+def add_document(opensearch_client, index_name, embedding, content):
     document_data = {
-        "embedding": embedding
+        "embedding": embedding,
+        "content": content
     }
     response = opensearch_client.index(index=index_name, body=document_data)
     

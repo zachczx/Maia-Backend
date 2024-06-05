@@ -1,56 +1,47 @@
-# import os
-# import dotenv
-# from langchain_openai import ChatOpenAI
-# from langchain import hub
-# from langchain.chains import create_retrieval_chain
-# from langchain.chains.combine_documents import create_stuff_documents_chain
-# from langchain_community.document_loaders import WebBaseLoader
-# from langchain_core.output_parsers import StrOutputParser
-# from langchain_core.prompts import ChatPromptTemplate
-# from langchain_core.runnables import RunnablePassthrough
-# from langchain_openai import OpenAIEmbeddings
-# from langchain_text_splitters import RecursiveCharacterTextSplitter
+from .openai_service import get_embedding, get_openai_embedding_client, get_llm_response
+from langchain_community.vectorstores import OpenSearchVectorSearch
+from .opensearch_service import get_opensearch_endpoint
+from requests_aws4auth import AWS4Auth
+from opensearchpy import RequestsHttpConnection
+import logging
+import boto3
 
-# dotenv.load_dotenv()
+logger = logging.getLogger('django')
 
-# os.environ["OPENAI_API_KEY"]
-
-# llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
-
-# # 1. Load, chunk and index the contents of the blog to create a retriever.
-# loader = WebBaseLoader(
-#     web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
-#     bs_kwargs=dict(
-#         parse_only=bs4.SoupStrainer(
-#             class_=("post-content", "post-title", "post-header")
-#         )
-#     ),
-# )
-# docs = loader.load()
-
-# text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-# splits = text_splitter.split_documents(docs)
-# vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
-# retriever = vectorstore.as_retriever()
-
-
-# # 2. Incorporate the retriever into a question-answering chain.
-# system_prompt = (
-#     "You are an assistant for question-answering tasks. "
-#     "Use the following pieces of retrieved context to answer "
-#     "the question. If you don't know the answer, say that you "
-#     "don't know. Use three sentences maximum and keep the "
-#     "answer concise."
-#     "\n\n"
-#     "{context}"
-# )
-
-# prompt = ChatPromptTemplate.from_messages(
-#     [
-#         ("system", system_prompt),
-#         ("human", "{input}"),
-#     ]
-# )
-
-# question_answer_chain = create_stuff_documents_chain(llm, prompt)
-# rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+def chat(query, _is_aoss=False):
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    aws_auth = AWS4Auth(credentials.access_key, credentials.secret_key, "ap-southeast-1", 'es', session_token=credentials.token)
+    
+    opensearch_endpoint = get_opensearch_endpoint("vector-kb", "ap-southeast-1")
+    
+    docsearch = OpenSearchVectorSearch(
+        index_name="vector-kb-index",
+        embedding_function=get_openai_embedding_client(),
+        opensearch_url=f"https://{opensearch_endpoint}",
+        http_auth=aws_auth,
+        timeout=30,
+        is_aoss=_is_aoss,
+        connection_class=RequestsHttpConnection,
+        use_ssl=True,
+        verify_certs=True,
+    )
+    
+    docs = docsearch.similarity_search_with_score(
+        query,
+        search_type="script_scoring",
+        space_type="cosinesimil",
+        vector_field="embedding",
+        text_field="content",
+        score_threshold=1.5
+    )
+    
+    contexts = []
+    for doc in docs:
+        contexts.append(doc[0].page_content)
+    
+    if len(contexts) > 0:
+        response = get_llm_response(query, contexts)
+    else:
+        response = "I'm sorry, but I don't have the information on that topic right now."
+    return response

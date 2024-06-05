@@ -12,6 +12,10 @@ logger = logging.getLogger('django')
 
 
 def process_document(file_path, kb_resource):
+    # client = get_opensearch_cluster_client("vector-kb", "ap-southeast-1")
+    # delete_opensearch_index(client, "vector-kb-index")
+    # create_index(client, "vector-kb-index")
+    # create_index_mapping(client, "vector-kb-index")
 
     file_extension = Path(file_path).suffix
     
@@ -107,7 +111,7 @@ def add_chunk(text_chunk, opensearch_client, openai_client, metadata, kb_resourc
     embedding = get_embedding(f'{metadata} {text_chunk.content}', openai_client)
     
     # Add to opensearch
-    opensearch_id = add_document(opensearch_client, "vector-kb-index", embedding)
+    opensearch_id = add_document(opensearch_client, "vector-kb-index", embedding, text_chunk.content)
     logger.info(opensearch_id)
     
     # Add to postgres

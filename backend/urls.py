@@ -17,9 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from document_processor import urls as document_processor_urls
+from response_generator import urls as response_generator_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(document_processor_urls)),
+    path('api/', include(response_generator_urls)),
 ]
