@@ -4,8 +4,8 @@ from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import ResponseGeneratorSerialiser
 from .services.chat_service import chat
+import json
 
 import logging
 
@@ -14,12 +14,10 @@ logger = logging.getLogger('django')
 @method_decorator(csrf_exempt, name='dispatch')
 class ResponseGeneratorView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = ResponseGeneratorSerialiser(data=request.data)
-        if serializer.is_valid():
-            query = serializer.validated_data['query']
-            
-            response = chat(query)
+        try:
+            data = json.loads(request.body)
+            response = chat(data["chat_history"])
             
             return Response({'response': response}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'response': 'An error has occurred.'}, status=status.HTTP_400_BAD_REQUEST)
