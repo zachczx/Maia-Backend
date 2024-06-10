@@ -3,6 +3,7 @@ from dataclasses import dataclass
 @dataclass
 class KbResource():
     id: int
+    name: str
     category: str
     sub_category: str
     tag: str

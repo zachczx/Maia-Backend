@@ -1,6 +1,6 @@
-from .openai_service import get_embedding, get_openai_embedding_client
-from .opensearch_service import add_document, get_opensearch_cluster_client, delete_opensearch_index, create_index, create_index_mapping
-from core.utils import kb_embedding_service, kb_resource_service
+from core.utils.openai import get_embedding, get_openai_embedding_client
+from core.utils.opensearch import add_document, get_opensearch_cluster_client, delete_opensearch_index, create_index, create_index_mapping
+from core.utils import kb_embedding
 from ..utils.data_models import TextChunk
 from pathlib import Path
 from openpyxl import load_workbook
@@ -43,9 +43,13 @@ def process_document(file_path, kb_resource):
 
 
 def add_kb_resource(kb_resource):
+    logger.info(kb_resource.name)
     data = {
         "status": 1
     }
+    
+    if kb_resource.name !=None and kb_resource.name !="":
+        data["name"] = kb_resource.name
 
     if kb_resource.category !=None and kb_resource.category !="":
         data["category"] = kb_resource.category
@@ -55,9 +59,10 @@ def add_kb_resource(kb_resource):
         
     if kb_resource.tag !=None and kb_resource.tag !="":
         data["tag"] = kb_resource.tag
+        
     
     try:
-        kb_resource_row = kb_resource_service.create_kb_resource(data)
+        kb_resource_row = kb_resource.create_kb_resource(data)
         kb_resource_id = kb_resource_row["id"]
         logger.info("Kb_resource added successfully to Postgres DB")
         return kb_resource_id
@@ -78,6 +83,9 @@ def read_excel(file_path):
         for sheet in workbook.worksheets:
             sheet_content = []
             for row in sheet.rows:
+                if len(row) < 2:
+                    break
+                
                 question = row[0].value
                 answer = row[1].value
                 
@@ -112,7 +120,6 @@ def add_chunk(text_chunk, opensearch_client, openai_client, metadata, kb_resourc
     
     # Add to opensearch
     opensearch_id = add_document(opensearch_client, "vector-kb-index", embedding, text_chunk.content)
-    logger.info(opensearch_id)
     
     # Add to postgres
     data = {
@@ -120,6 +127,6 @@ def add_chunk(text_chunk, opensearch_client, openai_client, metadata, kb_resourc
         "content": text_chunk.content,
         "vector_db_id": opensearch_id,
     }
-    kb_embedding_row = kb_embedding_service.create_kb_embedding(data)
+    kb_embedding_row = kb_embedding.create_kb_embedding(data)
     logger.info(f'Kb_embedding {kb_embedding_row["id"]} added successfully to Postgres DB')
     return

@@ -4,9 +4,14 @@ from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from .serializers import FileUploadSerializer
 from .utils.data_models import KbResource
 from .services.document_service import process_document
+from core.utils import (
+    kb_embedding,
+    kb_resource
+)
 import os
 import uuid
 import logging
@@ -23,8 +28,9 @@ class FileUploadView(APIView):
             sub_category = serializer.validated_data.get('sub_category', None)
             tag = serializer.validated_data.get('tag', None)
             file_path = self.save_uploaded_file(file)
+            name = file.name.split('.')[0]
             
-            kb_resource = KbResource(id=None, category=category, sub_category=sub_category, tag=tag)
+            kb_resource = KbResource(id=None, name=name, category=category, sub_category=sub_category, tag=tag)
             process_document(file_path, kb_resource)
             
             return Response({'message': 'File received'}, status=status.HTTP_200_OK)
@@ -49,3 +55,35 @@ class FileUploadView(APIView):
             return file_path
         except:
             return ""
+    
+    def get_file_name(self, file):
+        file_name = file.name
+        return file_name
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class ResourceView(APIView):
+    def get(self, request, pk=None):
+        try:
+            if pk:
+                # Get a single kb resource by id
+                data = kb_resource.get_kb_resource_by_id(pk)
+            else:
+                # Get all kb resources
+                data = kb_resource.get_all_kb_resources()
+            return Response({'data': data}, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response(e.detail, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, pk):
+        try:
+            data = kb_resource.update_kb_resource(pk, request.data)
+            return Response(data, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response(e.detail, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, pk):
+        try:
+            result = kb_resource.delete_kb_resource(pk)
+            return Response(result, status=status.HTTP_204_NO_CONTENT)
+        except ValidationError as e:
+            return Response(e.detail, status=status.HTTP_404_NOT_FOUND)

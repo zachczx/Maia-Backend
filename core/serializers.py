@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 class KbResourceSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=255, required=False)
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     category = serializers.CharField(max_length=255, required=False)
@@ -14,7 +15,7 @@ class KbResourceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = KbResource
-        fields = ['id', 'created_at', 'updated_at', 'category', 'sub_category', 'tag', 'status']
+        fields = ['id', 'name', 'created_at', 'updated_at', 'category', 'sub_category', 'tag', 'status']
 
 class KbEmbeddingSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)

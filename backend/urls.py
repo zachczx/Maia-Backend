@@ -18,10 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from document_processor import urls as document_processor_urls
 from response_generator import urls as response_generator_urls
+from query_classifier import urls as query_classifier_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(document_processor_urls)),
     path('api/', include(response_generator_urls)),
+    path('api/', include(query_classifier_urls)),
 ]
