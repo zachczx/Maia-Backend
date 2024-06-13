@@ -42,3 +42,11 @@ def delete_kb_embedding(embedding_id):
         return {'status': 'deleted'}
     except KbEmbedding.DoesNotExist:
         raise ValidationError({'error': 'Embedding not found'})
+    
+def delete_kb_embedding_by_resource_id(resource_id):
+    try:
+        embedding = KbEmbedding.objects.get(kb_resource=resource_id)
+        embedding.delete()
+        return {'status': 'deleted'}
+    except KbEmbedding.DoesNotExist:
+        raise ValidationError({'error': 'Embedding not found'})

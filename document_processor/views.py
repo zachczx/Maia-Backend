@@ -9,8 +9,8 @@ from .serializers import FileUploadSerializer
 from .utils.data_models import KbResource
 from .services.document_service import process_document
 from core.utils import (
-    kb_embedding,
-    kb_resource
+    kb_embedding_utils,
+    kb_resource_utils
 )
 import os
 import uuid
@@ -66,24 +66,24 @@ class ResourceView(APIView):
         try:
             if pk:
                 # Get a single kb resource by id
-                data = kb_resource.get_kb_resource_by_id(pk)
+                data = kb_resource_utils.get_kb_resource_by_id(pk)
             else:
                 # Get all kb resources
-                data = kb_resource.get_all_kb_resources()
+                data = kb_resource_utils.get_all_kb_resources()
             return Response({'data': data}, status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response(e.detail, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, pk):
         try:
-            data = kb_resource.update_kb_resource(pk, request.data)
+            data = kb_resource_utils.update_kb_resource(pk, request.data)
             return Response(data, status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response(e.detail, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk):
         try:
-            result = kb_resource.delete_kb_resource(pk)
+            result = kb_resource_utils.delete_kb_resource(pk)
             return Response(result, status=status.HTTP_204_NO_CONTENT)
         except ValidationError as e:
             return Response(e.detail, status=status.HTTP_404_NOT_FOUND)

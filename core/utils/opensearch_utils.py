@@ -1,4 +1,4 @@
-from core.utils.openai import get_openai_embedding_client
+from core.utils.openai_utils import get_openai_embedding_client
 from langchain_community.vectorstores import OpenSearchVectorSearch
 from requests_aws4auth import AWS4Auth
 from opensearchpy import RequestsHttpConnection

@@ -1,6 +1,6 @@
-from core.utils.openai import get_embedding, get_openai_embedding_client
-from core.utils.opensearch import add_document, get_opensearch_cluster_client, delete_opensearch_index, create_index, create_index_mapping
-from core.utils import kb_embedding
+from core.utils.openai_utils import get_embedding, get_openai_embedding_client
+from core.utils.opensearch_utils import add_document, get_opensearch_cluster_client, delete_opensearch_index, create_index, create_index_mapping
+from core.utils import kb_embedding_utils, kb_resource_utils
 from ..utils.data_models import TextChunk
 from pathlib import Path
 from openpyxl import load_workbook
@@ -43,7 +43,6 @@ def process_document(file_path, kb_resource):
 
 
 def add_kb_resource(kb_resource):
-    logger.info(kb_resource.name)
     data = {
         "status": 1
     }
@@ -62,12 +61,12 @@ def add_kb_resource(kb_resource):
         
     
     try:
-        kb_resource_row = kb_resource.create_kb_resource(data)
+        kb_resource_row = kb_resource_utils.create_kb_resource(data)
         kb_resource_id = kb_resource_row["id"]
         logger.info("Kb_resource added successfully to Postgres DB")
         return kb_resource_id
-    except:
-        logger.error("Error encountered when adding to kb_resource table")
+    except Exception as e:
+        logger.error("Error encountered when adding to kb_resource table: %s", str(e))
         return 0
 
 
@@ -127,6 +126,6 @@ def add_chunk(text_chunk, opensearch_client, openai_client, metadata, kb_resourc
         "content": text_chunk.content,
         "vector_db_id": opensearch_id,
     }
-    kb_embedding_row = kb_embedding.create_kb_embedding(data)
+    kb_embedding_row = kb_embedding_utils.create_kb_embedding(data)
     logger.info(f'Kb_embedding {kb_embedding_row["id"]} added successfully to Postgres DB')
     return
