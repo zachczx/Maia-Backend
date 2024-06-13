@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 from .serializers import FileUploadSerializer
 from .utils.data_models import KbResource
 from .services.document_service import process_document
+from .services.delete_service import delete_resource
 from core.utils import (
     kb_embedding_utils,
     kb_resource_utils
@@ -83,7 +84,7 @@ class ResourceView(APIView):
 
     def delete(self, request, pk):
         try:
-            result = kb_resource_utils.delete_kb_resource(pk)
+            result = delete_resource(pk)
             return Response(result, status=status.HTTP_204_NO_CONTENT)
         except ValidationError as e:
             return Response(e.detail, status=status.HTTP_404_NOT_FOUND)
