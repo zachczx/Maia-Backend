@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
-from core.utils.openai import get_openai_llm_client
+from core.utils.openai_utils import get_openai_llm_client
 from langchain_core.prompts import ChatPromptTemplate
 import logging
 import json

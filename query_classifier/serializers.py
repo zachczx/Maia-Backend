@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-class QueryClassifierSerializer(serializers.Serializer):
+class TextQueryClassifierSerializer(serializers.Serializer):
     query = serializers.CharField()
     history = serializers.ListField(
         child=serializers.ListField(
@@ -8,3 +8,6 @@ class QueryClassifierSerializer(serializers.Serializer):
         ),
         required=False
     )
+
+class AudioQueryClassifierSerializer(serializers.Serializer):
+    query = serializers.FileField()

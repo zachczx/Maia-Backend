@@ -1,6 +1,7 @@
 from django.urls import path, include
-from .views import QueryClassifierView
+from .views import TextQueryClassifierView, AudioQueryClassifierView
 
 urlpatterns = [
-    path('query/', QueryClassifierView.as_view(), name='Query Classifier'),
+    path('query/text/', TextQueryClassifierView.as_view(), name='Text Query Classifier'),
+    path('query/audio/', AudioQueryClassifierView.as_view(), name='Audio Query Classifier'),
 ]

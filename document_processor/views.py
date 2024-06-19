@@ -84,7 +84,7 @@ class ResourceView(APIView):
 
     def delete(self, request, pk):
         try:
-            result = delete_resource(pk)
-            return Response(result, status=status.HTTP_204_NO_CONTENT)
+            data = delete_resource(pk)
+            return Response(data, status=status.HTTP_204_NO_CONTENT)
         except ValidationError as e:
             return Response(e.detail, status=status.HTTP_404_NOT_FOUND)

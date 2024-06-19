@@ -1,5 +1,5 @@
 from .openai_service import get_llm_response
-from core.utils.opensearch import search_vector_db
+from core.utils.opensearch_utils import search_vector_db
 import logging
 
 logger = logging.getLogger('django')
