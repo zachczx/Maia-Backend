@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class QueryResponse():
+    query: str
     query_type: str
     category: str
     sub_category: str

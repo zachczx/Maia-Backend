@@ -1,5 +1,5 @@
 from .openai_service import get_query_summary
-from core.utils.opensearch import search_vector_db
+from core.utils.opensearch_utils import search_vector_db
 from .openai_service import get_classifier_completions
 import logging
 

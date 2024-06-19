@@ -3,10 +3,11 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain.chains import OpenAIModerationChain
-from langchain.chains import OpenAIModerationChain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import OpenAI
+from openai import OpenAI as BaseOpenAI
 import logging
+
 
 load_dotenv()
 logger = logging.getLogger('django')
@@ -38,3 +39,22 @@ def get_openai_llm_client():
     )
     logger.info("OpenAI LLM client initialised")
     return llm
+
+def get_whisper_client():
+    client = BaseOpenAI()
+    logger.info("OpenAI Whisper client initialised")
+    return client
+
+def get_transcription(file_path, client=get_whisper_client()):
+    audio_file= open(file_path, "rb")
+    transcription = client.audio.transcriptions.create(
+    model="whisper-1", 
+    file=audio_file,
+    language="en",
+    prompt="Transcribe the audio, ensuring that the transcription accurately reflects what is clearly audible",
+    )
+    
+    # process transcription 
+    text = transcription.text.replace("...", "")
+    logger.info("Audio transcription is completed")
+    return text

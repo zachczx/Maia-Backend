@@ -1,7 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 from ..utils.data_models import QueryResponse
-from core.utils.openai import get_openai_llm_client
+from core.utils.openai_utils import get_openai_llm_client
 import logging
 import json
 import re
@@ -58,7 +58,7 @@ def escape_characters(conversation):
     return conversation
 
 def format_openai_response(openai_response, messages, context, query):
-
+    
     query_type = openai_response.get("query_type", "Unknown")
     category = openai_response.get("category", "Unknown")
     sub_category = openai_response.get("sub_category", "Unknown")
@@ -78,6 +78,7 @@ def format_openai_response(openai_response, messages, context, query):
     messages = escape_characters(messages)
     
     return QueryResponse(
+        query=query,
         query_type=query_type,
         category=category,
         sub_category=sub_category,
@@ -139,7 +140,7 @@ def get_classifier_completions(query, history, context=None):
     
     Step 3:{delimiter} Analyse the sentiment of the customer and return the answer as 'Positive', 'Neutral', 'Negative' only. Do not return any answer beyond the three provided earlier.
 
-    Step 4:{delimiter} Use the context given or search the {websites} to formulate a response which should be in a similar format as given in the input. For example, an email should be replied in the format of an email. A message should be replied in the format of a message. 
+    Step 4:{delimiter} Analyze the query and determine which communication channel it belongs to (web chat, phone call, or email) based on the language and characteristics of the query. Use the context given or search the {websites} to formulate a response which should be in a similar format as given in the input. For example, a email should be replied in an email format, phone call should be replied with a point form call notes for the contact staff to contact the customer.
     The response could include a direct answer, a step-by-step guide, or a list of options for the customer.
     You may personalize the answer using the customer's name and details (if given).
     The context given is related to each queries as identified, ensure that you reply to all queries. Do not use information beyond the context or websites provided. If there is no relevant or given context, you may say that you will check and follow up.
