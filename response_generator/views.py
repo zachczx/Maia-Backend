@@ -16,7 +16,7 @@ class ResponseGeneratorView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
-            response = chat(data["chat_history"])
+            response = chat(data["chat_history"], False)
             
             return Response({'response': response}, status=status.HTTP_200_OK)
         except:

@@ -3,8 +3,6 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain.chains import OpenAIModerationChain
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import OpenAI
 from openai import OpenAI as BaseOpenAI
 import logging
 

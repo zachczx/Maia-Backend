@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import KbResource, KbEmbedding, CustomerEngagement
 
-# Register your models here.
+admin.site.register(KbResource)
+admin.site.register(KbEmbedding)
+admin.site.register(CustomerEngagement)
