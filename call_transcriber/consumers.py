@@ -42,13 +42,11 @@ class Transcript:
         return 
 
     def add_suggestion(self, suggestion):
-        logger.info("in here")
         entry = {
             "role": "suggestion",
             "content": suggestion
         }
         self.transcript_dict.append(entry)
-        logger.info(self.transcript_dict)
 
     def get_transcript(self):
         return self.transcript_dict
@@ -149,16 +147,11 @@ class AudioConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         if text_data is not None:
             try:
-                logger.info("111111")
                 data = json.loads(text_data)
                 logger.info(text_data)
                 if data.get("type") == "suggestion_request":
-                    logger.info("3333333")
                     suggestion = chat(data["transcript"], True)
-                    logger.info(suggestion)
                     self.transcript.add_suggestion(suggestion)
-                    logger.info(self.transcript.get_transcript())
-                    logger.info("-------------")
                     await self.send_transcript(self.transcript.get_transcript())
             except json.JSONDecodeError as e:
                 logger.error(f"JSON decode error: {e}")

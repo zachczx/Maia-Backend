@@ -1,6 +1,7 @@
-from django.urls import path, include
-from .views import KbResourceView
+from django.urls import path
+from .views import CustomerEngagementAPIView, CustomerEngagementDetailAPIView
 
 urlpatterns = [
-    path('kbresource/', KbResourceView.as_view(), name='KbResource'),
+    path('engagement/', CustomerEngagementAPIView.as_view(), name='customer_engagements'),
+    path('engagement/<int:engagement_id>/', CustomerEngagementDetailAPIView.as_view(), name='customer_engagement_detail'),
 ]
