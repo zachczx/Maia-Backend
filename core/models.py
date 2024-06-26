@@ -3,11 +3,12 @@ from django.contrib.auth.models import User
 from django.db import models
 
 class KbResource(models.Model):
-    name = models.CharField(blank = True, null=True)
+    name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    category = models.CharField(max_length=255, blank = True, null=True)
-    sub_category = models.CharField(max_length=255, blank = True, null=True)
+    category = models.CharField(max_length=255)
+    sub_category = models.CharField(max_length=255)
+    sub_subcategory = models.CharField(max_length=255, blank = True, null=True)
     tag = models.CharField(max_length=255, blank = True, null=True)
     status = models.IntegerField(blank = True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null = True)
@@ -29,7 +30,20 @@ class KbEmbedding(models.Model):
     def __str__(self):
         return str(self.id)
 
+class Customer(models.Model):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    phone_number = models.CharField(max_length=50)
+    email = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'customer'
+
+    def __str__(self):
+        return f'Customer {self.id}'
+
 class CustomerEngagement(models.Model):
+    customer  = models.ForeignKey(Customer, on_delete=models.CASCADE, null = True)
     timestamp = models.DateTimeField(auto_now_add=True)
     channel = models.IntegerField() # 0 - call, 1 - web chat, 2 email
     query_type = models.CharField(max_length=100)
@@ -41,10 +55,6 @@ class CustomerEngagement(models.Model):
     suggested_reply = models.TextField(blank=True, null=True)
     conversation = models.TextField(blank=True, null=True)
     call_duration = models.DurationField(blank=True, null=True)
-    customer_first_name = models.CharField(max_length=50)
-    customer_last_name = models.CharField(max_length=50)
-    customer_phone_number = models.CharField(max_length=50)
-    customer_email = models.CharField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null = True)
     resolution = models.BooleanField(default=False)
     follow_up_needed = models.BooleanField(default=False)
@@ -56,5 +66,3 @@ class CustomerEngagement(models.Model):
 
     def __str__(self):
         return f'CustomerEngagement {self.id} - {self.timestamp}'
-
-
