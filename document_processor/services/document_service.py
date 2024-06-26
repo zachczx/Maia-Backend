@@ -56,6 +56,9 @@ def add_kb_resource(kb_resource):
     if kb_resource.sub_category !=None and kb_resource.sub_category !="":
         data["sub_category"] = kb_resource.sub_category
         
+    if kb_resource.sub_subcategory !=None and kb_resource.sub_subcategory !="":
+        data["sub_subcategory"] = kb_resource.sub_subcategory
+        
     if kb_resource.tag !=None and kb_resource.tag !="":
         data["tag"] = kb_resource.tag
         

@@ -28,13 +28,14 @@ class FileUploadView(APIView):
             name = serializer.validated_data.get('name', None)
             category = serializer.validated_data.get('category', None)
             sub_category = serializer.validated_data.get('sub_category', None)
+            sub_subcategory = serializer.validated_data.get('sub_subcategory', None)
             tag = serializer.validated_data.get('tag', None)
             file_path = self.save_uploaded_file(file)
             
             if name == None:
                 name = file.name.split('.')[0]
             
-            kb_resource = KbResource(id=None, name=name, category=category, sub_category=sub_category, tag=tag)
+            kb_resource = KbResource(id=None, name=name, category=category, sub_category=sub_category, sub_subcategory=sub_subcategory, tag=tag)
             process_document(file_path, kb_resource)
             
             return Response({'message': 'File received'}, status=status.HTTP_200_OK)

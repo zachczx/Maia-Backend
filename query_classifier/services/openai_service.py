@@ -62,6 +62,7 @@ def format_openai_response(openai_response, messages, context, query):
     query_type = openai_response.get("query_type", "Unknown")
     category = openai_response.get("category", "Unknown")
     sub_category = openai_response.get("sub_category", "Unknown")
+    sub_subcategory = openai_response.get("sub_subcategory", None)
     root_cause = openai_response.get("root_cause", "Unknown")
     sentiment = openai_response.get("sentiment", "Unknown")
     suggested_reply = openai_response.get("suggested_reply", "Unknown")
@@ -82,6 +83,7 @@ def format_openai_response(openai_response, messages, context, query):
         query_type=query_type,
         category=category,
         sub_category=sub_category,
+        sub_subcategory=sub_subcategory,
         root_cause=root_cause,
         sentiment=sentiment,
         suggested_reply=suggested_reply,
@@ -136,7 +138,7 @@ def get_classifier_completions(query, history, context=None):
     Return the answer as 'Transaction' or 'General Enquiries'
 
     Step 2:{delimiter} analyses the keywords and phrasing to understand the general intent.
-    Based on the analysis, categorizes the query into predefined category, sub category, and the root cause on why are they contacting us. You should select the most relevant category and sub category. Explain the root cause in a clear and concise manner.
+    Based on the analysis, categorizes the query into predefined category, sub category, sub subcategory and the root cause on why are they contacting us. You should select the most relevant category, sub category and sub subcategory (sub subcategory only if necessary). Explain the root cause in a clear and concise manner.
     
     Step 3:{delimiter} Analyse the sentiment of the customer and return the answer as 'Positive', 'Neutral', 'Negative' only. Do not return any answer beyond the three provided earlier.
 
@@ -163,6 +165,7 @@ def get_classifier_completions(query, history, context=None):
         'query_type': '<type>',
         'category': '<category>',
         'sub_category': '<sub_category>',
+        'sub_subcategory': '<sub_subcategory>',
         'root_cause': '<root_cause>',
         'sentiment': '<sentiment>',
         'suggested_reply': '<reply>'
@@ -173,6 +176,7 @@ def get_classifier_completions(query, history, context=None):
         'query_type': 'Transaction',
         'category': 'eMart',
         'sub_category': 'Credit amount',
+        'sub_subcategory': 'Top Up',
         'root_cause': 'The keywords "enquire on his emart credit" and "do not have enough credits" indicate that the customer is concerned about the credit amount available for making purchases',
         'sentiment': 'Neutral',
         'suggested_reply': '''

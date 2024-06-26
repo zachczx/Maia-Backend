@@ -6,10 +6,14 @@ class KbResource():
     name: str
     category: str
     sub_category: str
+    sub_subcategory: str
     tag: str
     
     def get_metadata(self) -> str:
-        return f"[{self.category},{self.sub_category}]"
+        metadata = [self.category, self.sub_category]
+        if self.sub_subcategory !=None:
+            metadata.append(self.sub_subcategory)
+        return f"[{','.join(metadata)}]"
 
 
 @dataclass
