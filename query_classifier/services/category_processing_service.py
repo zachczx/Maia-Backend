@@ -10,11 +10,11 @@ def process_excel(file_path):
 
         values = df.iloc[1:, 0].tolist()
 
-        processed_values = []
+        processed_values = set()
         for value in values:
             parts = [part.strip() for part in value.split('-')]
             processed_value = '-'.join(parts)
-            processed_values.append(processed_value)
+            processed_values.add(processed_value)
         
         logger.info("Excel file read successfully")
         
