@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'query_classifier',
     'document_processor',
     'call_transcriber',
+    'customer_profiler',
     'core',
     
 ]

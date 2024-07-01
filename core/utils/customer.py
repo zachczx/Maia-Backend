@@ -25,6 +25,22 @@ def get_customer_by_id(customer_id):
         return serializer.data
     except Customer.DoesNotExist:
         raise ValidationError({'error': 'Customer not found'})
+    
+def get_customer_by_email(email):
+    try:
+        customer = Customer.objects.get(email=email)
+        serializer = CustomerSerializer(customer)
+        return serializer.data
+    except Customer.DoesNotExist:
+        raise ValidationError({'error': 'Customer not found'})
+
+def get_customer_by_phone_number(phone_number):
+    try:
+        customer = Customer.objects.get(phone_number=phone_number)
+        serializer = CustomerSerializer(customer)
+        return serializer.data
+    except Customer.DoesNotExist:
+        raise ValidationError({'error': 'Customer not found'})
 
 def update_customer(customer_id, data):
     try:

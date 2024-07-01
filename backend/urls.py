@@ -19,6 +19,7 @@ from django.urls import path, include
 from document_processor import urls as document_processor_urls
 from response_generator import urls as response_generator_urls
 from query_classifier import urls as query_classifier_urls
+from customer_profiler import urls as customer_profiler_urls
 from core import urls as core_urls
 
 urlpatterns = [
@@ -26,6 +27,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(document_processor_urls)),
     path('api/', include(response_generator_urls)),
+    path('api/', include(customer_profiler_urls)),
     path('api/', include(query_classifier_urls)),
     path('api/', include(core_urls)),
 ]

@@ -35,6 +35,8 @@ class Customer(models.Model):
     last_name = models.CharField(max_length=50)
     phone_number = models.CharField(max_length=50)
     email = models.CharField(max_length=255)
+    updated_at = models.DateTimeField(auto_now=True)
+    analytics = models.JSONField(blank=True, null=True) # num_calls, preferred_channel, resolution_status, summary,
 
     class Meta:
         db_table = 'customer'
