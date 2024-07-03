@@ -2,11 +2,11 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from core.models import CustomerProfile, Customer
-from core.serializers import CustomerProfileSerializer, CustomerSerialize
+from .serializers import CustomerProfileSerializer
+from .utils.data_models import ProfilingRequest
+from .services.customer_search_service import search_customer
 import logging
 
 logger = logging.getLogger("django")
@@ -15,16 +15,18 @@ logger = logging.getLogger("django")
 class CustomerProfileAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
-        serializer = TextQueryClassifierSerializer(data=request.data)
+        serializer = CustomerProfileSerializer(data=request.data)
         if serializer.is_valid():
-            query = serializer.validated_data.get('query', None)
-            history = serializer.validated_data.get('history', None)
-            if history:
-                history = [tuple(item) for item in history]
+            first_name = serializer.validated_data.get('first_name', None)
+            last_name = serializer.validated_data.get('last_name', None)
+            country_code = serializer.validated_data.get('country_code', None)
+            phone_number = serializer.validated_data.get('phone_number', None)
+            email = serializer.validated_data.get("email", None)
+
+            customer = ProfilingRequest(first_name, last_name, country_code, phone_number, email)
+            response = search_customer(customer)
             
-            response = query_classifier(query, history)
-            json_response = asdict(response)
-            
-            return Response(json_response, status=status.HTTP_200_OK)
+            return Response(data=response.to_json(), status=status.HTTP_200_OK)
         else:
+            logger.info("error")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

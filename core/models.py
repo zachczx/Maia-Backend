@@ -33,10 +33,11 @@ class KbEmbedding(models.Model):
 class Customer(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
+    country_code = models.CharField(max_length=5)
     phone_number = models.CharField(max_length=50)
     email = models.CharField(max_length=255)
     updated_at = models.DateTimeField(auto_now=True)
-    analytics = models.JSONField(blank=True, null=True) # num_calls, preferred_channel, resolution_status, summary,
+    analytics = models.JSONField(blank=True, null=True) # engagement_num, preferred_channel, resolution_status, summary, past aggression
 
     class Meta:
         db_table = 'customer'

@@ -1,6 +1,7 @@
 from core.models import CustomerEngagement
 from core.serializers import CustomerEngagementSerializer
 from rest_framework.exceptions import ValidationError
+from core.utils.customer_utils import update_customer
 
 def get_all_customer_engagements():
     engagements = CustomerEngagement.objects.all()
@@ -42,3 +43,11 @@ def delete_customer_engagement(engagement_id):
         return {'status': 'deleted'}
     except CustomerEngagement.DoesNotExist:
         raise ValidationError({'error': 'Customer engagement not found'})
+
+def get_customer_engagements_by_customer(customer_id):
+    try:
+        engagements = CustomerEngagement.objects.filter(customer_id=customer_id)
+        serializer = CustomerEngagementSerializer(engagements, many=True)
+        return serializer.data
+    except CustomerEngagement.DoesNotExist:
+        raise ValidationError({'error': 'No engagements found for the customer'})

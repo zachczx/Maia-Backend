@@ -1,6 +1,7 @@
 from core.models import Customer
 from core.serializers import CustomerSerializer
 from rest_framework.exceptions import ValidationError
+from django.db.models import Q
 
 def get_all_customers():
     customers = Customer.objects.all()
@@ -8,7 +9,11 @@ def get_all_customers():
     return serializer.data
 
 def create_customer(data):
-    if check_customer_exists(data.get('phone_number'), data.get('first_name'), data.get('last_name'))['exists']:
+    if check_customer_exists(data.get('first_name'), 
+                             data.get('last_name'), 
+                             data.get('phone_number'), 
+                             data.get('country_code'), 
+                             data.get('email'))['exists']:
         raise ValidationError({'error': 'Customer already exists'})
     
     serializer = CustomerSerializer(data=data)
@@ -62,9 +67,15 @@ def delete_customer(customer_id):
     except Customer.DoesNotExist:
         raise ValidationError({'error': 'Customer not found'})
 
-def check_customer_exists(phone_number, first_name, last_name):
+def check_customer_exists(first_name, last_name, country_code, phone_number, email):
     try:
-        customer = Customer.objects.get(phone_number=phone_number, first_name=first_name, last_name=last_name)
+        customer = Customer.objects.get(
+            Q(first_name__iexact=first_name) &
+            Q(last_name__iexact=last_name) &
+            Q(phone_number=phone_number) &
+            Q(country_code=country_code) &
+            Q(email__iexact=email)
+        )
         return {
             'exists': True,
             'customer': CustomerSerializer(customer).data,
@@ -73,5 +84,5 @@ def check_customer_exists(phone_number, first_name, last_name):
     except Customer.DoesNotExist:
         return {
             'exists': False,
-            'message': 'Customer not found with the given phone number and name'
+            'message': 'Customer not found with the given details'
         }
