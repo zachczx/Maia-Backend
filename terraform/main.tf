@@ -33,7 +33,7 @@ resource "aws_db_instance" "kb" {
   instance_class         = "db.t3.micro"
   allocated_storage      = 20
   engine                 = "postgres"
-  engine_version         = "15.4"
+  engine_version         = "15.5"
   username               = "${var.db_username}"
   password               = "${var.db_password}"
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
@@ -67,4 +67,52 @@ resource "aws_opensearch_domain" "vector-kb" {
   tags = {
     Domain = "Vector KB DB"
   }
+}
+
+resource "aws_s3_bucket" "kb_bucket" {
+  bucket  = "kb-docs-bucket"
+  tags    = {
+    Name          = "KBDocsBucket"
+    Environment   = "Production"
+  }
+}
+
+resource "aws_s3_bucket_acl" "kb_bucket" {
+  bucket = aws_s3_bucket.kb_bucket.id
+  acl    = "private"
+  depends_on = [aws_s3_bucket_ownership_controls.kb_bucket_acl_ownership]
+}
+
+resource "aws_s3_bucket_ownership_controls" "kb_bucket_acl_ownership" {
+  bucket = aws_s3_bucket.kb_bucket.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+resource "aws_s3_bucket" "log_bucket" {
+  bucket = "kb-log-bucket"
+    tags = {
+      Name        = "KBLogBucket"
+      Environment = "Production"
+    }
+}
+
+resource "aws_s3_bucket_acl" "log_bucket_acl" {
+  bucket = aws_s3_bucket.log_bucket.id
+  acl    = "log-delivery-write"
+  depends_on = [aws_s3_bucket_ownership_controls.log_bucket_acl_ownership]
+}
+
+resource "aws_s3_bucket_ownership_controls" "log_bucket_acl_ownership" {
+  bucket = aws_s3_bucket.log_bucket.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+resource "aws_s3_bucket_logging" "kb_bucket" {
+  bucket        = aws_s3_bucket.kb_bucket.id
+  target_bucket = aws_s3_bucket.log_bucket.id
+  target_prefix = "log/"
 }
