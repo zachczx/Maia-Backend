@@ -22,10 +22,12 @@ class TextQueryClassifierView(APIView):
         if serializer.is_valid():
             query = serializer.validated_data.get('query', None)
             history = serializer.validated_data.get('history', None)
+            notes = serializer.validated_data.get('notes', None)
+            
             if history:
                 history = [tuple(item) for item in history]
             
-            response = query_classifier(query, history)
+            response = query_classifier(query, history, notes)
             json_response = asdict(response)
             
             return Response(json_response, status=status.HTTP_200_OK)
@@ -38,10 +40,11 @@ class AudioQueryClassifierView(APIView):
         serializer = AudioQueryClassifierSerializer(data=request.data)
         if serializer.is_valid():
             audio_query = serializer.validated_data['query']
+            notes = serializer.validated_data['notes']
             
             file_path = self.save_audio_to_wav_file(audio_query)
             text_query = get_transcription(file_path)
-            response = query_classifier(text_query, None)
+            response = query_classifier(text_query, None, notes)
             json_response = asdict(response)
             
             return Response(json_response, status=status.HTTP_200_OK)

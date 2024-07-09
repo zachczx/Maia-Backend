@@ -4,6 +4,7 @@ import os
 
 class TextQueryClassifierSerializer(serializers.Serializer):
     query = serializers.CharField()
+    notes = serializers.CharField()
     history = serializers.ListField(
         child=serializers.ListField(
             child=serializers.CharField()
@@ -13,7 +14,7 @@ class TextQueryClassifierSerializer(serializers.Serializer):
 
 class AudioQueryClassifierSerializer(serializers.Serializer):
     query = serializers.FileField()
-    
+    notes = serializers.CharField()    
 
 class CategoryExcelProcessorSerializer(serializers.Serializer):
     file = serializers.FileField()

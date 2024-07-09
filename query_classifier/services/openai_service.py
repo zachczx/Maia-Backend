@@ -121,7 +121,7 @@ def format_openai_response(openai_response, messages, context, query):
     )
 
 
-def get_classifier_completions(query, history, context=None):
+def get_classifier_completions(query, history, context=None, notes):
     delimiter = "####"
     websites = read_csv_file("website")
     categories = read_csv_file("category")
@@ -133,7 +133,7 @@ def get_classifier_completions(query, history, context=None):
     system_message = system_message.replace("{categories}", "\n".join(categories))
     
     openai_input = history if history else [("system", system_message)]
-    openai_input.append(("user", "QUERY: {query}" if history else "QUERY: {query}, CONTEXT: {context}"))
+    openai_input.append(("user", "QUERY: {query} " if history else "QUERY: {query}, CONTEXT: {context}"))
     
     context = json.dumps(context)
     

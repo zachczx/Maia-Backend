@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger('django')
 
-def query_classifier(query, chat_history):
+def query_classifier(query, chat_history, notes):
     # send query to get summarised
     if chat_history != None or chat_history!=[]:
         query_list = get_query_summary(query)
@@ -18,6 +18,6 @@ def query_classifier(query, chat_history):
             contexts[summarised_query] = context
         
     # send context + query + chat history to get classified + response
-    query_response = get_classifier_completions(query, chat_history, contexts)
+    query_response = get_classifier_completions(query, chat_history, contexts, notes)
     
     return query_response
