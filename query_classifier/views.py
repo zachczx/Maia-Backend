@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from dataclasses import asdict
 from core.utils.openai_utils import get_transcription
 from .services import category_processing_service
+from .utils.data_models import QueryRequest
 import logging
 import tempfile
 import os
@@ -20,14 +21,20 @@ class TextQueryClassifierView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = TextQueryClassifierSerializer(data=request.data)
         if serializer.is_valid():
-            query = serializer.validated_data.get('query', None)
-            history = serializer.validated_data.get('history', None)
-            notes = serializer.validated_data.get('notes', None)
+            query_data = QueryRequest(
+                case_information=serializer.validated_data.get('case_information', None),
+                response_format=serializer.validated_data.get('response_format', None),
+                response_template=serializer.validated_data.get('response_template', None),
+                domain_knowledge=serializer.validated_data.get('domain_knowledge', None),
+                past_responses=serializer.validated_data.get('past_responses', None),
+                extra_information=serializer.validated_data.get('extra_information', None),
+                history=serializer.validated_data.get('history', None),
+            )
             
-            if history:
-                history = [tuple(item) for item in history]
+            if query_data.history:
+                query_data.history = [tuple(item) for item in query_data.history]
             
-            response = query_classifier(query, history, notes)
+            response = query_classifier(query_data)
             json_response = asdict(response)
             
             return Response(json_response, status=status.HTTP_200_OK)
@@ -39,12 +46,25 @@ class AudioQueryClassifierView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = AudioQueryClassifierSerializer(data=request.data)
         if serializer.is_valid():
-            audio_query = serializer.validated_data['query']
-            notes = serializer.validated_data['notes']
+            audio_query = serializer.validated_data['case_information']
+            response_format=serializer.validated_data.get('response_format', None)
+            response_template=serializer.validated_data.get('response_template', None)
+            domain_knowledge=serializer.validated_data.get('domain_knowledge', None)
+            past_responses=serializer.validated_data.get('past_responses', None)
+            extra_information=serializer.validated_data.get('extra_information', None)
             
             file_path = self.save_audio_to_wav_file(audio_query)
             text_query = get_transcription(file_path)
-            response = query_classifier(text_query, None, notes)
+            
+            query_data = QueryRequest(
+                case_information=text_query,
+                response_format=response_format,
+                response_template=response_template,
+                domain_knowledge=domain_knowledge,
+                past_responses=past_responses,
+                extra_information=extra_information,
+            )
+            response = query_classifier(query_data)
             json_response = asdict(response)
             
             return Response(json_response, status=status.HTTP_200_OK)

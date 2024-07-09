@@ -3,8 +3,12 @@ from django.core.exceptions import ValidationError
 import os
 
 class TextQueryClassifierSerializer(serializers.Serializer):
-    query = serializers.CharField()
-    notes = serializers.CharField()
+    case_information = serializers.CharField()
+    response_format = serializers.CharField(required=False)
+    response_template = serializers.CharField(required=False)
+    domain_knowledge = serializers.CharField(required=False)
+    past_responses = serializers.CharField(required=False)
+    extra_information = serializers.CharField(required=False)
     history = serializers.ListField(
         child=serializers.ListField(
             child=serializers.CharField()
@@ -13,8 +17,12 @@ class TextQueryClassifierSerializer(serializers.Serializer):
     )
 
 class AudioQueryClassifierSerializer(serializers.Serializer):
-    query = serializers.FileField()
-    notes = serializers.CharField()    
+    case_information = serializers.FileField()
+    response_format = serializers.CharField(required=False)
+    response_template = serializers.CharField(required=False)
+    domain_knowledge = serializers.CharField(required=False)
+    past_responses = serializers.CharField(required=False)
+    extra_information = serializers.CharField(required=False)   
 
 class CategoryExcelProcessorSerializer(serializers.Serializer):
     file = serializers.FileField()

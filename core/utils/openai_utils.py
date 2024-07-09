@@ -29,7 +29,7 @@ def get_embedding(content, embedding_client):
 
 def get_openai_llm_client():
     llm = ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-3.5-turbo-0125",
         temperature=0,
         max_tokens=500,
         timeout=None,

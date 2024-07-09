@@ -66,13 +66,6 @@ def get_query_summary(query):
     return query_list
 
 
-def create_openai_input_params(system_message=None, query=None, context=None, history=None):
-    return {
-        "system_message": system_message,
-        "query": query,
-        "context": context
-    } if system_message else {"query": query, "history" : history}
-
 def escape_characters(conversation):
     unescaped_curly_open = re.compile(r'(?<!{){(?!{)')
     unescaped_curly_close = re.compile(r'(?<!})}(?!})')
@@ -89,11 +82,13 @@ def escape_characters(conversation):
 
 def format_openai_response(openai_response, messages, context, query):
     
-    query_type = openai_response.get("query_type", "Unknown")
+    case_title = openai_response.get("case_title", "Unknown")
+    case_type = openai_response.get("case_type", "Unknown")
+    case_description = openai_response.get("case_description", "Unknown")
+    priority = openai_response.get("priority", "Unknown")
     category = openai_response.get("category", "Unknown")
     sub_category = openai_response.get("sub_category", "Unknown")
     sub_subcategory = openai_response.get("sub_subcategory", None)
-    root_cause = openai_response.get("root_cause", "Unknown")
     sentiment = openai_response.get("sentiment", "Unknown")
     suggested_reply = openai_response.get("suggested_reply", "Unknown")
 
@@ -109,19 +104,20 @@ def format_openai_response(openai_response, messages, context, query):
     messages = escape_characters(messages)
     
     return QueryResponse(
-        query=query,
-        query_type=query_type,
+        case_title=case_title,
+        case_type=case_type,
+        case_description=case_description,
+        priority=priority,
         category=category,
         sub_category=sub_category,
         sub_subcategory=sub_subcategory,
-        root_cause=root_cause,
         sentiment=sentiment,
         suggested_reply=suggested_reply,
         log=messages
     )
 
 
-def get_classifier_completions(query, history, context=None, notes):
+def get_classifier_completions(query_data, context=None):
     delimiter = "####"
     websites = read_csv_file("website")
     categories = read_csv_file("category")
@@ -132,8 +128,41 @@ def get_classifier_completions(query, history, context=None, notes):
     system_message = system_message.replace("{websites}", ", ".join(websites))
     system_message = system_message.replace("{categories}", "\n".join(categories))
     
-    openai_input = history if history else [("system", system_message)]
-    openai_input.append(("user", "QUERY: {query} " if history else "QUERY: {query}, CONTEXT: {context}"))
+    openai_input = query_data.history if query_data.history else [("system", system_message)]
+    
+    input_list = ["CASE_INFORMATION: {case_information}"]
+    openai_json_call = {"case_information": query_data.case_information}    
+    
+    if query_data.history:
+        input_list.append("HISTORY: {history}")
+        openai_json_call["history"] = query_data.history
+
+    else:
+        input_list.append("CONTEXT: {context}")
+        openai_json_call["system_message"] = system_message
+        openai_json_call["context"] = context
+
+    if query_data.response_format:
+        input_list.append("RESPONSE_FORMAT: {response_format}")
+        openai_json_call["response_format"] = query_data.response_format
+        
+    if query_data.response_template:
+        input_list.append("RESPONSE_TEMPLATE: {response_template}")
+        openai_json_call["response_template"] = query_data.response_template
+        
+    if query_data.domain_knowledge:
+        input_list.append("DOMAIN_KNOWLEDGE: {domain_knowledge}")
+        openai_json_call["domain_knowledge"] = query_data.domain_knowledge
+        
+    if query_data.past_responses:
+        input_list.append("PAST_RESPONSES: {past_responses}")
+        openai_json_call["past_responses"] = query_data.past_responses
+    
+    if query_data.extra_information:
+        input_list.append("EXTRA_INFORMATION: {extra_information}")
+        openai_json_call["extra_information"] = query_data.extra_information
+
+    openai_input.append(("user", ", ".join(input_list)))
     
     context = json.dumps(context)
     
@@ -142,16 +171,10 @@ def get_classifier_completions(query, history, context=None, notes):
 
     chain = prompt | llm
     
-    if history:
-        openai_json_call = create_openai_input_params(query=query)
-
-    else:
-        openai_json_call = create_openai_input_params(system_message=system_message, query=query, context=context)
-
     openai_response = chain.invoke(
         openai_json_call
     )
-    query_response = format_openai_response(openai_response, openai_input, context, query)
+    query_response = format_openai_response(openai_response, openai_input, context, query_data.case_information)
     
     logger.info("Classification completed by OpenAI")
 
