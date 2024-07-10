@@ -68,10 +68,10 @@
     Query: "ns man said that he received a missed call" 
     Sentiment: Neutral.
 
-    Step 7 - {delimiter} Use the CONTEXT given or DOMAIN_KNOWLEDGE (if given) or search the {websites} to formulate a response.
+    Step 7 - {delimiter} Use the CONTEXT given or EXTRA_INFORMATION (if given) or search the {websites} to formulate a response.
     The response could include a direct answer, a step-by-step guide, or a list of options for the customer.
     You may personalize the answer using the customer's name and details (if given).
-    The CONTEXT given is related to each queries as identified, ensure that you reply to all queries. Do not use information beyond the CONTEXT or websites provided. If there is no relevant or given CONTEXT, you may say that you will check and follow up. Return the suggested reply in the RESPONSE_FORMAT given. The possible RESPONSE_FORMAT are Email and Call Notes.
+    The CONTEXT given is related to each queries as identified, ensure that you reply to all queries. Do not use information beyond the CONTEXT or websites provided. If there is no relevant or given CONTEXT, you may say that you will check and follow up. Return the suggested reply in the RESPONSE_FORMAT given as a string, do not return the RESPONSE_FORMAT. The possible RESPONSE_FORMAT are Email and Call Notes.
 
     If there are PAST_RESPONSES given, analyse the PAST_RESPONSES and ensure that the suggested reply is phrased differently from the PAST_RESPONSES to personalize the suggested reply.
 
