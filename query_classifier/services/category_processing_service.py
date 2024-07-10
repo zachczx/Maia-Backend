@@ -20,11 +20,11 @@ def process_excel(file_path):
         
         categories_file = os.path.join('query_classifier', 'config', 'categories.csv')
         if os.path.exists(categories_file):
-            with open(categories_file, 'w') as f:
+            with open(categories_file, 'w', encoding='utf-8') as f:
                 f.write("CATEGORIES\n")
 
         categories_file = os.path.join('query_classifier', 'config', 'categories.csv')
-        with open(categories_file, 'a') as f:
+        with open(categories_file, 'a', encoding='utf-8') as f:
             for processed_value in processed_values:
                 f.write(f"{processed_value}\n")
                 

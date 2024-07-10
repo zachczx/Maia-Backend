@@ -75,7 +75,7 @@ class AudioQueryClassifierView(APIView):
         temp_file = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
         file_path = temp_file.name
 
-        with open(file_path, 'wb') as f:
+        with open(file_path, 'wb', encoding='utf-8') as f:
             f.write(audio_data.read())
             
         logger.info("Audio file saved as temporary file")

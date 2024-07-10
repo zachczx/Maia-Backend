@@ -157,6 +157,23 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+LOG_DIR = os.path.join(BASE_DIR, 'log')
+LOG_FILE = 'debug.log'
+
+LOG_PATH = os.path.join(LOG_DIR, LOG_FILE)
+
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+if not os.path.exists(LOG_PATH):
+    with open(LOG_PATH, 'a') as f:
+        pass  # Create an empty log file
+else:
+    with open(LOG_PATH, 'w') as f:
+        pass  # Clear the log file
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -164,7 +181,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'C:/Users/ASUS/Documents/School/Internship/MINDEF/ccs-backend/backend/debug.log',
+            'filename': LOG_PATH,
         },
         'console': {
             'level': 'INFO',

@@ -22,7 +22,7 @@ def read_csv_file(file_type): # file_type = website or category
     values = []
     csv_file_path = os.path.join('query_classifier', 'config', file_name)
     
-    with open(csv_file_path, 'r') as file:
+    with open(csv_file_path, 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
         next(reader)
         for row in reader:
@@ -34,7 +34,7 @@ def read_prompt_file():
     prompt_file_path = os.path.join('query_classifier', 'config', 'prompt.txt')
 
     try:
-        with open(prompt_file_path, 'r') as file:
+        with open(prompt_file_path, 'r', encoding='utf-8') as file:
             chunk_of_text = file.read()
             return chunk_of_text
     except FileNotFoundError:
