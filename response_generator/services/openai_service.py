@@ -13,7 +13,7 @@ def get_llm_response(query, contexts, chat_history, call_assistant):
         [
             (
                 "system",
-                "You are a helpful assistant that generates a short and concise answer (less than 50 words) based on the context. Do not use other information outside of the context given> Consider the chat history when determining context and generating answer. If CALL_ASSISTANT is equal to True, please phrase the response as though it is being spoken by a call center representative addressing the caller's query. If CALL_ASSISTANT is set to True, respond as a call center representative addressing the caller's query. If CALL_ASSISTANT is True and there is no given context, respond with a follow-up question or inform the caller that you don't have an answer at the moment.",
+                "You are a helpful assistant that generates a short and concise answer (less than 50 words) based on the context. Do not use other information outside of the context given> Consider the chat history when determining context and generating answer. Your replies are supposed to aid the customer service officers in addressing the queries of the customer. If CALL_ASSISTANT is equal to True, please phrase the response as though you are instructing the customer service officer to reply to the customer. If CALL_ASSISTANT is True and there is no given context, respond with a follow-up question or inform the customer service officer that you don't have an answer at the moment.",
             ),
             ("human", "QUERY: {query}, CONTEXT: {context}, CHAT_HISTORY: {chat_history}, CALL_ASSISTANT: {call_assistant}"),
         ]
