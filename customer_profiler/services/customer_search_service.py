@@ -5,7 +5,7 @@ from .openai_service import get_llm_response
 from ..utils.data_models import Customer, Analytics
 from collections import Counter
 import logging
-import Levenshtein
+# import Levenshtein
 
 logger = logging.getLogger("django")
 
