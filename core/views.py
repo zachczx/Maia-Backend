@@ -5,8 +5,8 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from core.models import CustomerEngagement, Customer
-from core.serializers import CustomerEngagementSerializer, CustomerSerializer
+from core.models import CustomerEngagement, Customer, KbEmbedding
+from core.serializers import CustomerEngagementSerializer, CustomerSerializer, KbEmbeddingSerializer
 from django.db.models import Q
 import logging
 
@@ -141,3 +141,45 @@ def check_customer_exists(first_name, last_name, phone_number, country_code, ema
             'exists': False,
             'message': 'Customer not found with the given details'
         }
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class KbEmbeddingAPIView(APIView):
+
+    def get(self, request):
+        embeddings = KbEmbedding.objects.all()
+        serializer = KbEmbeddingSerializer(embeddings, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = KbEmbeddingSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class KbEmbeddingDetailAPIView(APIView):
+
+    def get_object(self, embedding_id):
+        try:
+            return KbEmbedding.objects.get(id=embedding_id)
+        except KbEmbedding.DoesNotExist:
+            raise ValidationError({'error': 'Embedding not found'})
+
+    def get(self, request, embedding_id):
+        embedding = self.get_object(embedding_id)
+        serializer = KbEmbeddingSerializer(embedding)
+        return Response(serializer.data)
+
+    def put(self, request, embedding_id):
+        embedding = self.get_object(embedding_id)
+        serializer = KbEmbeddingSerializer(embedding, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, embedding_id):
+        embedding = self.get_object(embedding_id)
+        embedding.delete()
+        return Response({'status': 'deleted'}, status=status.HTTP_204_NO_CONTENT)

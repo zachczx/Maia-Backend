@@ -12,10 +12,10 @@ logger = logging.getLogger('django')
 
 
 def process_document(file_path, kb_resource):
-    # client = get_opensearch_cluster_client("vector-kb", "ap-southeast-1")
-    # delete_opensearch_index(client, "vector-kb-index")
-    # create_index(client, "vector-kb-index")
-    # create_index_mapping(client, "vector-kb-index")
+    client = get_opensearch_cluster_client("vector-kb", "ap-southeast-1")
+    delete_opensearch_index(client, "vector-kb-index")
+    create_index(client, "vector-kb-index")
+    create_index_mapping(client, "vector-kb-index")
 
     file_extension = Path(file_path).suffix
     
@@ -120,15 +120,16 @@ def add_chunks(text_chunks, metadata, kb_resource_id):
 def add_chunk(text_chunk, opensearch_client, openai_client, metadata, kb_resource_id):
     embedding = get_embedding(f'{metadata} {text_chunk.content}', openai_client)
     
-    # Add to opensearch
-    opensearch_id = add_document(opensearch_client, "vector-kb-index", embedding, text_chunk.content)
-    
     # Add to postgres
     data = {
         "kb_resource": kb_resource_id,
         "content": text_chunk.content,
-        "vector_db_id": opensearch_id,
     }
     kb_embedding_row = kb_embedding_utils.create_kb_embedding(data)
     logger.info(f'Kb_embedding {kb_embedding_row["id"]} added successfully to Postgres DB')
+    
+    # Add to opensearch
+    opensearch_id = add_document(opensearch_client, "vector-kb-index", embedding, text_chunk.content, kb_embedding_row["id"])
+    
+    
     return

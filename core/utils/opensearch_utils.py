@@ -68,6 +68,9 @@ def create_index_mapping(opensearch_client, index_name):
                 },
                 "content": {
                     "type": "keyword"
+                },
+                "postgresql_id": {
+                    "type": "long"
                 }
             }
         }
@@ -76,10 +79,11 @@ def create_index_mapping(opensearch_client, index_name):
     return bool(response['acknowledged'])
 
 
-def add_document(opensearch_client, index_name, embedding, content):
+def add_document(opensearch_client, index_name, embedding, content, postgresql_id):
     document_data = {
         "embedding": embedding,
-        "content": content
+        "content": content,
+        "postgresql_id": postgresql_id
     }
     response = opensearch_client.index(index=index_name, body=document_data)
     logger.info("Document added to opensearch")
@@ -127,8 +131,7 @@ def search_vector_db(query, _is_aoss=False):
 
     contexts = []
     for doc in docs:
-        # logger.info(doc)
-        contexts.append(doc[0].page_content)
+        contexts.append((doc[0].metadata["postgresql_id"], doc[0].page_content))
     
     logger.info("Similar documents retrieved from Opensearch for context")
     return contexts

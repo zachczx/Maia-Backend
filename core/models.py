@@ -22,7 +22,7 @@ class KbResource(models.Model):
 class KbEmbedding(models.Model):
     kb_resource = models.ForeignKey(KbResource, on_delete=models.CASCADE)
     content = models.TextField()
-    vector_db_id = models.CharField(max_length=255)
+    vector_db_id = models.CharField(max_length=255, blank = True, null=True)
     
     class Meta:
         db_table = 'kb_embedding'

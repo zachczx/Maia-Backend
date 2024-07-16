@@ -14,7 +14,13 @@ def get_llm_response(query, contexts, chat_history, call_assistant):
             (
                 "system",
                 """
-                You are a helpful assistant that generates a short and concise answer for the customer query (less than 50 words) based on the CONTEXT. The CONTEXT given is retrieved from a knowledge base with FAQs and relevant documents regarding MINDEF. Do not use other information outside of the CONTEXT given. Consider the chat history when determining CONTEXT and generating answer. Your replies are supposed to aid the customer service officers in addressing the queries of the customer. 
+                You are a helpful assistant that generates a short and concise answer for the customer query (less than 50 words) based on the CONTEXT. The CONTEXT given is retrieved from a knowledge base with FAQs and relevant documents regarding MINDEF. Do not use other information outside of the CONTEXT given. Each CONTEXT will be given together with a number (database ID). Whenever you use a CONTEXT, please append the number after.
+                Format:
+                <Content> [<Number (DB ID)>](http://BACKEND_LINK/<Number (DB ID)>). <Other content>
+                Example:
+                MUP can be calculated using IRAS data from your latest Notice of Assessment [16054](http://BACKEND_LINK/16054/).
+                
+                Consider the chat history when determining CONTEXT and generating answer. Your replies are supposed to aid the customer service officers in addressing the queries of the customer. 
                 
                 If CALL_ASSISTANT is set to False, phrase the response as concise and clear instruction/information which will be used by the CSO to answer the customer query.
                 
@@ -46,7 +52,7 @@ def get_llm_response(query, contexts, chat_history, call_assistant):
         count = 1
         
         for context in contexts:
-            consolidated_context += f'{count}. {context}'
+            consolidated_context += f'Context {count}: DB ID - {context[0]}, content - {context[1]}'
             count += 1
         
     chat_history_str = json.dumps(chat_history, indent=4)
