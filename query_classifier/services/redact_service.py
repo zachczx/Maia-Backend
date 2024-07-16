@@ -109,15 +109,15 @@ def combine_placeholders(text, placeholder):
     combined = re.sub(rf'(\[{placeholder}\])(\s*\[{placeholder}\])+', rf'[{placeholder}]', text)
     return combined
 
+def remove_digits(text):
+    return re.sub(r'\d+', '', text)
+
 def redact_text(text):
     redacted_text_spacy = redact_entities_spacy(text)
     redacted_text_wo_address = redact_addresses(redacted_text_spacy)
     redacted_text_wo_phone_num = redact_phone_numbers(redacted_text_wo_address)
-    final_redacted_text = combine_placeholders(redacted_text_wo_phone_num, 'NAME')
+    redacted_text_wo_digits = remove_digits(redacted_text_wo_phone_num)
+    final_redacted_text = combine_placeholders(redacted_text_wo_digits, 'NAME')
     final_redacted_text = combine_placeholders(final_redacted_text, 'ADDRESS')
 
     return final_redacted_text
-
-text = "my name is tian chu and my nric is t0208761d and my phone number is 91234567 and passport is e1234567d and email is chulintian@gmail.com and my address is 423 hougang avenue 6 #06-106 s(530423)"
-redacted_text = redact_text(text)
-print(redacted_text)
