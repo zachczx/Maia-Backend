@@ -127,6 +127,8 @@ def search_vector_db(query, _is_aoss=False):
 
     contexts = []
     for doc in docs:
+        # logger.info(doc)
         contexts.append(doc[0].page_content)
+    
     logger.info("Similar documents retrieved from Opensearch for context")
     return contexts

@@ -44,15 +44,17 @@ def get_whisper_client():
     return client
 
 def get_transcription(file_path, client=get_whisper_client()):
-    audio_file= open(file_path, "rb")
-    transcription = client.audio.transcriptions.create(
-    model="whisper-1", 
-    file=audio_file,
-    language="en",
-    prompt="Transcribe the audio, ensuring that the transcription accurately reflects what is clearly audible",
-    )
-    
-    # process transcription 
-    text = transcription.text.replace("...", "")
+    with open(file_path, "rb") as audio_file:
+        transcription = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file,
+            temperature=0,
+            prompt="This audio chunk is part of a conversation between a call center staff and a customer. Do not attempt to complete any cut-off words; transcribe only what is clearly audible.",
+            language="en",
+            response_format="text"
+        )
+
+    # Process transcription 
+    text = transcription.replace("...", "")
     logger.info("Audio transcription is completed")
     return text

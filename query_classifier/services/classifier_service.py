@@ -9,7 +9,6 @@ logger = logging.getLogger('django')
 def query_classifier(query_data):
     # redact query 
     query_data.case_information = redact_text(query_data.case_information)
-    logger.info(query_data.case_information)
     
     # send query to get summarised
     if query_data.history != None or query_data.history!=[]:

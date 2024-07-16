@@ -11,6 +11,7 @@ class KbResource():
     def get_metadata(self) -> str:
         return f"[{self.category},{self.sub_category}] "
 
+@dataclass
 class KbEmbedding():
     id: int
     kb_resource_id: int
