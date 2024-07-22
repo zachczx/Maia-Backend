@@ -29,6 +29,7 @@ RATE = 16000
 
 class Transcript:
     def __init__(self):
+        self.past_transcript_dict = []
         self.transcript_dict = []
 
     def change_transcript(self, transcript_with_speakers):
@@ -44,7 +45,7 @@ class Transcript:
 
             self.transcript_dict.append({"role": speaker, "content": speaker_content})
 
-    def add_suggestion(self, suggestion):
+    def add_suggestion(self, suggestion, transcript):
         self.transcript_dict.append({"role": "suggestion", "content": suggestion})
 
     def get_transcript(self):
@@ -69,18 +70,18 @@ class AudioConsumer(AsyncWebsocketConsumer):
         if bytes_data:
             self.audio_chunks.append(bytes_data)
             
-        # if text_data:
-        #     try:
-        #         data = json.loads(text_data)
-        #         logger.info(text_data)
-        #         if data.get("type") == "suggestion_request":
-        #             suggestion = chat(data["transcript"], True)
-        #             self.transcript.add_suggestion(suggestion)
-        #             await self.send_transcript(self.transcript.get_transcript())
-        #     except json.JSONDecodeError as e:
-        #         logger.error(f"JSON decode error: {e}")
-        #     except Exception as e:
-        #         logger.error(f"Error handling text data: {e}")
+        if text_data:
+            try:
+                data = json.loads(text_data)
+                if data.get("type") == "suggestion_request":
+                    self.audio_chunks.clear()
+                    suggestion = chat(data["transcript"], True)
+                    self.transcript.add_suggestion(suggestion, data["transcript"])
+                    await self.send_transcript(self.transcript.get_transcript())
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error: {e}")
+            except Exception as e:
+                logger.error(f"Error handling text data: {e}")
 
     async def process_audio_chunks(self):
         while True:

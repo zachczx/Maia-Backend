@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from core.models import CustomerEngagement, Customer, KbEmbedding
 from core.serializers import CustomerEngagementSerializer, CustomerSerializer, KbEmbeddingSerializer
+from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 import logging
 
@@ -14,6 +15,7 @@ logger = logging.getLogger("django")
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomerEngagementAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     
     def get(self, request):
         engagements = CustomerEngagement.objects.all()
@@ -31,7 +33,8 @@ class CustomerEngagementAPIView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomerEngagementDetailAPIView(APIView):
-
+    permission_classes = [IsAuthenticated]
+    
     def get_object(self, engagement_id):
         try:
             return CustomerEngagement.objects.get(id=engagement_id)
@@ -58,6 +61,7 @@ class CustomerEngagementDetailAPIView(APIView):
     
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomerAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     
     def get(self, request):
         customers = Customer.objects.all()
@@ -87,6 +91,7 @@ class CustomerAPIView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomerDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get_object(self, customer_id):
         try:
@@ -144,6 +149,7 @@ def check_customer_exists(first_name, last_name, phone_number, country_code, ema
         
 @method_decorator(csrf_exempt, name='dispatch')
 class KbEmbeddingAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         embeddings = KbEmbedding.objects.all()
@@ -159,6 +165,7 @@ class KbEmbeddingAPIView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class KbEmbeddingDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get_object(self, embedding_id):
         try:

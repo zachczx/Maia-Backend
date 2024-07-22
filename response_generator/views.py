@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from .services.chat_service import chat
+from rest_framework.permissions import IsAuthenticated
 import json
 
 import logging
@@ -13,6 +14,8 @@ logger = logging.getLogger('django')
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ResponseGeneratorView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)

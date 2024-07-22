@@ -7,12 +7,14 @@ from django.views.decorators.csrf import csrf_exempt
 from .serializers import CustomerProfileSerializer
 from .utils.data_models import ProfilingRequest
 from .services.customer_search_service import search_customer
+from rest_framework.permissions import IsAuthenticated
 import logging
 
 logger = logging.getLogger("django")
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomerProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = CustomerProfileSerializer(data=request.data)

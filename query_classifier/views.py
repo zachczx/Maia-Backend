@@ -10,6 +10,7 @@ from dataclasses import asdict
 from core.utils.openai_utils import get_transcription
 from .services import category_processing_service
 from .utils.data_models import QueryRequest
+from rest_framework.permissions import IsAuthenticated
 import logging
 import tempfile
 import os
@@ -18,6 +19,8 @@ logger = logging.getLogger('django')
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TextQueryClassifierView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request, *args, **kwargs):
         serializer = TextQueryClassifierSerializer(data=request.data)
         if serializer.is_valid():
@@ -43,6 +46,8 @@ class TextQueryClassifierView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AudioQueryClassifierView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request, *args, **kwargs):
         serializer = AudioQueryClassifierSerializer(data=request.data)
         if serializer.is_valid():
@@ -82,6 +87,7 @@ class AudioQueryClassifierView(APIView):
         return file_path
 
 class CategoryExcelProcessorView(APIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = CategoryExcelProcessorSerializer
 
     def post(self, request, *args, **kwargs):

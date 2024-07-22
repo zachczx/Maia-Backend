@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
@@ -37,6 +38,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'channels',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     
     'django.contrib.admin',
@@ -52,8 +54,14 @@ INSTALLED_APPS = [
     'call_transcriber',
     'customer_profiler',
     'core',
-    
+    'account',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -9,6 +9,7 @@ from .serializers import FileUploadSerializer
 from .utils.data_models import KbResource
 from .services.document_service import process_document
 from .services.delete_service import delete_resource
+from rest_framework.permissions import IsAuthenticated
 from core.utils import (
     kb_embedding_utils,
     kb_resource_utils
@@ -21,6 +22,8 @@ logger = logging.getLogger('django')
 
 @method_decorator(csrf_exempt, name='dispatch')
 class FileUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request, *args, **kwargs):
         serializer = FileUploadSerializer(data=request.data)
         if serializer.is_valid():
@@ -67,6 +70,8 @@ class FileUploadView(APIView):
         
 @method_decorator(csrf_exempt, name='dispatch')
 class ResourceView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request, pk=None):
         try:
             if pk:

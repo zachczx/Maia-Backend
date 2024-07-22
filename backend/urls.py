@@ -21,6 +21,7 @@ from response_generator import urls as response_generator_urls
 from query_classifier import urls as query_classifier_urls
 from customer_profiler import urls as customer_profiler_urls
 from core import urls as core_urls
+from account import urls as account_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,4 +31,5 @@ urlpatterns = [
     path('api/', include(customer_profiler_urls)),
     path('api/', include(query_classifier_urls)),
     path('api/', include(core_urls)),
+    path('api/', include(account_urls)),
 ]
