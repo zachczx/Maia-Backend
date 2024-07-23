@@ -1,4 +1,5 @@
 from core.utils.openai_utils import get_openai_embedding_client
+from core.utils.secrets_manager_utils import get_secret
 from langchain_community.vectorstores import OpenSearchVectorSearch
 from requests_aws4auth import AWS4Auth
 from opensearchpy import RequestsHttpConnection
@@ -10,10 +11,9 @@ import logging
 logger = logging.getLogger('django')
 
 def get_opensearch_cluster_client(domain_name, region):
-    # Retrieve AWS credentials from the environment or AWS configuration
-    session = boto3.Session()
-    credentials = session.get_credentials()
-    aws_auth = AWS4Auth(credentials.access_key, credentials.secret_key, region, 'es', session_token=credentials.token)
+    AWS_ACCESS_KEY_ID = get_secret("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = get_secret("AWS_SECRET_ACCESS_KEY")
+    aws_auth = AWS4Auth(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, region, 'es', session_token=None)
 
     opensearch_endpoint = get_opensearch_endpoint(domain_name, region)
 
@@ -102,9 +102,9 @@ def delete_opensearch_index(opensearch_client, index_name):
 
 
 def search_vector_db(query, _is_aoss=False):
-    session = boto3.Session()
-    credentials = session.get_credentials()
-    aws_auth = AWS4Auth(credentials.access_key, credentials.secret_key, "ap-southeast-1", 'es', session_token=credentials.token)
+    AWS_ACCESS_KEY_ID = get_secret("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = get_secret("AWS_SECRET_ACCESS_KEY")
+    aws_auth = AWS4Auth(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, "ap-southeast-1", 'es', session_token=None)
 
     opensearch_endpoint = get_opensearch_endpoint("vector-kb", "ap-southeast-1")
 
