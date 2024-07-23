@@ -21,6 +21,7 @@ class QueryResponse:
     sub_category: str
     sub_subcategory: str
     sentiment: str
+    resolution_notes: str
     suggested_reply: str
     log: list
     

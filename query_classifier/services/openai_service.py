@@ -90,6 +90,7 @@ def format_openai_response(openai_response, messages, context, query):
     sub_category = openai_response.get("sub_category", "Unknown")
     sub_subcategory = openai_response.get("sub_subcategory", None)
     sentiment = openai_response.get("sentiment", "Unknown")
+    resolution_notes = openai_response.get("resolution_notes", "Unknown")
     suggested_reply = openai_response.get("suggested_reply", "Unknown")
 
     messages = [list(message) for message in messages]
@@ -112,6 +113,7 @@ def format_openai_response(openai_response, messages, context, query):
         sub_category=sub_category,
         sub_subcategory=sub_subcategory,
         sentiment=sentiment,
+        resolution_notes=resolution_notes,
         suggested_reply=suggested_reply,
         log=messages
     )

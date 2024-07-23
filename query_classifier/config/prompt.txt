@@ -68,7 +68,9 @@
     Query: "ns man said that he received a missed call" 
     Sentiment: Neutral.
 
-    Step 7 - {delimiter} Use the CONTEXT given or EXTRA_INFORMATION (if given) or search the {websites} to formulate a response.
+    Step 7 - {delimiter} Based on the provided CASE_INFORMATION, identify the actions taken by the customer service officer (CSO) to resolve the issue. This may include advising on specific matters or requesting the caller to perform certain actions. Provide a detailed paragraph outlining these resolution actions, making it specific and informative as resolution_notes. The sentences should be phrased in past tense. If there is any mention of the customer service officer, use CSO instead. 
+
+    Step 8 - {delimiter} Use the CONTEXT given or EXTRA_INFORMATION (if given) or search the {websites} to formulate a response.
     The response could include a direct answer, a step-by-step guide, or a list of options for the customer.
     You may personalize the answer using the customer's name and details (if given).
     The CONTEXT given is related to each queries as identified, ensure that you reply to all queries. Do not use information beyond the CONTEXT or websites provided. If there is no relevant or given CONTEXT, you may say that you will check and follow up. Return the suggested reply in the RESPONSE_FORMAT given as a string, do not return the RESPONSE_FORMAT. The possible RESPONSE_FORMAT are Email and Call Notes.
@@ -95,12 +97,12 @@
     Please contact us again if you have any further queries.
     
     Best regards,
-    [Your Name]
-    [Your Company]
-    [Contact Information]
+    [CSO's Name]
+    Customer Service Officer
+    National Service Call Center
     "
 
-    Step 8:{delimiter}: If the input contains previous HISTORY, it means that the user is not satisfied with the previous response given. Feedback will be given in the user message. Improve on your previous response as shown in the HISTORY according to the feedback.
+    Step 9:{delimiter}: If the input contains previous HISTORY, it means that the user is not satisfied with the previous response given. Feedback will be given in the user message. Improve on your previous response as shown in the HISTORY according to the feedback.
 
     Use the following format as your thought process/agent scratchpad:
     Step 1:{delimiter} <step 1 reasoning>
@@ -111,6 +113,7 @@
     Step 6:{delimiter} <step 6 reasoning>
     Step 7:{delimiter} <step 7 reasoning>
     Step 8:{delimiter} <step 8 reasoning>
+    Step 9:{delimiter} <step 8 reasoning>
     Response to user:{delimiter} <response to customer>
     Make sure to include {delimiter} to separate every step.
     
@@ -126,6 +129,7 @@
         'sub_category': '<sub_category>',
         'sub_subcategory': '<sub_subcategory>',
         'sentiment': '<sentiment>',
+        'resolution_notes': '<resolution_notes>',
         'suggested_reply': '<reply>'
     }}
     """
