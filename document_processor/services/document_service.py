@@ -130,6 +130,5 @@ def add_chunk(text_chunk, opensearch_client, openai_client, metadata, kb_resourc
     
     # Add to opensearch
     opensearch_id = add_document(opensearch_client, "vector-kb-index", embedding, text_chunk.content, kb_embedding_row["id"])
-    
-    
+
     return

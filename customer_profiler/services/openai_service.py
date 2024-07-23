@@ -1,10 +1,8 @@
-from dotenv import load_dotenv
 from core.utils.openai_utils import get_openai_llm_client, get_openai_moderation_client
 from ..utils.data_models import LLMResponse
 import logging
 from langchain_core.prompts import ChatPromptTemplate
 
-load_dotenv()
 logger = logging.getLogger("django")
 
 def get_llm_response(summaries, notes):

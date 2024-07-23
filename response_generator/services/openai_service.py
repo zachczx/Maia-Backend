@@ -1,12 +1,9 @@
-from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings
 from core.utils.openai_utils import get_openai_llm_client
 from langchain_core.prompts import ChatPromptTemplate
 import logging
 import json
 
 logger = logging.getLogger('django')
-
 
 def get_llm_response(query, contexts, chat_history, call_assistant):
     prompt = ChatPromptTemplate.from_messages(

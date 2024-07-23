@@ -1,10 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
-from dotenv import load_dotenv
 from core.utils.openai_utils import get_openai_llm_client
 import logging
-import json
 
-load_dotenv()
 logger = logging.getLogger('django')
 
 def do_speaker_diarization(transcript):

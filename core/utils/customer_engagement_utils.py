@@ -1,7 +1,6 @@
 from core.models import CustomerEngagement
 from core.serializers import CustomerEngagementSerializer
 from rest_framework.exceptions import ValidationError
-from core.utils.customer_utils import update_customer
 
 def get_all_customer_engagements():
     engagements = CustomerEngagement.objects.all()

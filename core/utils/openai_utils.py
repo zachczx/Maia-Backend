@@ -1,13 +1,13 @@
-from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain.chains import OpenAIModerationChain
 from openai import OpenAI as BaseOpenAI
+from core.utils.secrets_manager_utils import get_secret
 import logging
 
 
-load_dotenv()
+OPENAI_API_KEY = get_secret("OPENAI_API_KEY")
 logger = logging.getLogger('django')
 
 def get_openai_moderation_client():
@@ -20,7 +20,7 @@ def moderate_user_message(content):
 
 def get_openai_embedding_client():
     logger.info("OpenAI Embedding client initialised")
-    return OpenAIEmbeddings(model="text-embedding-3-small", dimensions=1536)
+    return OpenAIEmbeddings(model="text-embedding-3-small", dimensions=1536, api_key=OPENAI_API_KEY)
 
 def get_embedding(content, embedding_client):   
     embedding = embedding_client.embed_query(content)
@@ -34,12 +34,13 @@ def get_openai_llm_client():
         max_tokens=500,
         timeout=None,
         max_retries=2,
+        api_key=OPENAI_API_KEY,
     )
     logger.info("OpenAI LLM client initialised")
     return llm
 
 def get_whisper_client():
-    client = BaseOpenAI()
+    client = BaseOpenAI(api_key=OPENAI_API_KEY)
     logger.info("OpenAI Whisper client initialised")
     return client
 

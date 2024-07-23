@@ -1,5 +1,4 @@
 from langchain_core.prompts import ChatPromptTemplate
-from dotenv import load_dotenv
 from ..utils.data_models import QueryResponse
 from core.utils.openai_utils import get_openai_llm_client
 import logging
@@ -8,7 +7,6 @@ import re
 import csv
 import os
 
-load_dotenv()
 logger = logging.getLogger('django')
 
 def read_csv_file(file_type): # file_type = website or category

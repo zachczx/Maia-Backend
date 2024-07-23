@@ -1,9 +1,9 @@
 from collections import deque
 from channels.generic.websocket import AsyncWebsocketConsumer
 from core.utils.openai_utils import get_transcription
+from core.utils.secrets_manager_utils import get_secret
 from .services.openai_service import do_speaker_diarization
 from response_generator.services.chat_service import chat
-from dotenv import load_dotenv
 from pydub import AudioSegment, silence
 import numpy as np
 from openai import OpenAI
@@ -13,11 +13,6 @@ import wave
 import logging
 import asyncio
 import uuid
-
-# Load environment variables
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 logger = logging.getLogger('django')
 
