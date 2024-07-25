@@ -12,10 +12,10 @@ logger = logging.getLogger('django')
 
 
 def process_document(file_path, kb_resource):
-    client = get_opensearch_cluster_client("vector-kb", "ap-southeast-1")
-    delete_opensearch_index(client, "vector-kb-index")
-    create_index(client, "vector-kb-index")
-    create_index_mapping(client, "vector-kb-index")
+    # client = get_opensearch_cluster_client("vector-kb", "ap-southeast-1")
+    # delete_opensearch_index(client, "vector-kb-index")
+    # create_index(client, "vector-kb-index")
+    # create_index_mapping(client, "vector-kb-index")
 
     file_extension = Path(file_path).suffix
     
@@ -94,7 +94,7 @@ def read_excel(file_path):
                 if question == None or answer == None:
                     break
                 
-                content = question + " " + answer
+                content = question + "\n\n" + answer
                 text_chunk = TextChunk(content)
                 sheet_content.append(text_chunk)
                 

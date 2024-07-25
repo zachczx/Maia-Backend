@@ -8,11 +8,15 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
 COPY . /app/
 
-# Expose the port that uvicorn will run on
 EXPOSE 8000
 
 # Run uvicorn
-CMD ["uvicorn", "backend.asgi:application", "--host", "127.0.0.1", "--port", "8000"]
+CMD ["uvicorn", "backend.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
