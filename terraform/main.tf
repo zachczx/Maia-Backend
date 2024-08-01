@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 3.39.0"
+    }
+  }
+}
+
 provider "aws" {
   region     = "${var.region}"
   access_key = "${var.access_key}"
@@ -126,10 +135,20 @@ resource "aws_s3_bucket_logging" "kb_bucket" {
 
 resource "aws_ecr_repository" "frontend" {
   name = "frontend-repo"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 
 resource "aws_ecr_repository" "backend" {
   name = "backend-repo"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 
 resource "aws_iam_policy" "allow_ecr_public_authorization" {
@@ -379,6 +398,8 @@ resource "aws_ecs_task_definition" "frontend" {
         {
           containerPort = 80
           hostPort      = 80
+          protocol      = "tcp"
+          name          = "frontend"
         }
       ]
       logConfiguration = {
@@ -399,20 +420,22 @@ resource "aws_ecs_task_definition" "backend" {
   task_role_arn            = aws_iam_role.ecs_task_role_backend.arn
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "512"
-  memory                   = "1024"
+  cpu                      = "2048"
+  memory                   = "4096"
 
   container_definitions = jsonencode([
     {
       name      = "backend-container"
       image     = "${aws_ecr_repository.backend.repository_url}:latest"
-      cpu       = 512
-      memory    = 1024
+      cpu       = 2048
+      memory    = 4096
       essential = true
       portMappings = [
         {
-          containerPort = 8000
-          hostPort      = 8000
+          containerPort = 80
+          hostPort      = 80
+          protocol      = "tcp"
+          name          = "backend"
         }
       ]
       logConfiguration = {
@@ -423,7 +446,6 @@ resource "aws_ecs_task_definition" "backend" {
           "awslogs-stream-prefix"  = "backend"
         }
       }
-      "enableExecuteCommand": true
     }
   ])
 }
@@ -513,29 +535,42 @@ resource "aws_route_table_association" "private_subnet" {
   route_table_id = aws_route_table.private.id
 }
 
-resource "aws_security_group" "ecs" {
-  name        = "ecs_security_group"
+resource "aws_security_group" "frontend" {
+  name        = "ecs_security_group_frontend"
   description = "Allow ecs traffic"
   vpc_id      = aws_vpc.maia.id
 
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    cidr_blocks     = ["0.0.0.0/0"]
   }
 
   egress {
     from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "backend" {
+  name        = "ecs_security_group_backend"
+  description = "Allow ecs traffic"
+  vpc_id      = aws_vpc.maia.id
+
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.frontend.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -549,27 +584,8 @@ resource "aws_ecs_service" "frontend" {
 
   network_configuration {
     subnets         = aws_subnet.public[*].id
-    security_groups = [aws_security_group.ecs.id]
+    security_groups = [aws_security_group.frontend.id]
     assign_public_ip = true
-  }
-}
-
-resource "aws_service_discovery_private_dns_namespace" "maia" {
-  name = "maia.local"
-  vpc  = var.vpc_id
-}
-
-resource "aws_service_discovery_service" "backend" {
-  name      = "backend"
-
-  dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.maia.id
-    routing_policy = "MULTIVALUE"
-
-    dns_records {
-      ttl  = 60
-      type = "A"
-    }
   }
 }
 
@@ -581,13 +597,8 @@ resource "aws_ecs_service" "backend" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = aws_subnet.public[*].id
-    security_groups = [aws_security_group.ecs.id]
-    assign_public_ip = true
-  }
-
-  service_registries {
-    registry_arn    = aws_service_discovery_service.backend.arn
-    container_name  = "backend"
+    subnets         = aws_subnet.private[*].id
+    security_groups = [aws_security_group.backend.id]
+    assign_public_ip = false
   }
 }

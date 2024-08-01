@@ -9,9 +9,14 @@ from core.models import CustomerEngagement, Customer, KbEmbedding
 from core.serializers import CustomerEngagementSerializer, CustomerSerializer, KbEmbeddingSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+from django.http import JsonResponse
 import logging
 
 logger = logging.getLogger("django")
+
+def health_check(request):
+    data = {"status": "ok"}
+    return JsonResponse(data)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomerEngagementAPIView(APIView):

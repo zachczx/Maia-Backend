@@ -67,4 +67,3 @@ variable "availability_zones" {
   default     = ["ap-southeast-1a"]
 }
 
-
