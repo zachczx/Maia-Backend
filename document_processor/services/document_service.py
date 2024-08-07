@@ -1,9 +1,11 @@
-from core.utils.openai_utils import get_embedding, get_openai_embedding_client
+from core.utils.openai_utils import get_embedding
 from core.utils.opensearch_utils import add_document, get_opensearch_cluster_client, delete_opensearch_index, create_index, create_index_mapping
 from core.utils import kb_embedding_utils, kb_resource_utils
-from ..utils.data_models import TextChunk
+from ..utils.data_models import TextChunk, KbResource
 from pathlib import Path
 from openpyxl import load_workbook
+from typing import List
+from opensearchpy import OpenSearch
 import os
 import logging
 import time
@@ -11,11 +13,7 @@ import time
 logger = logging.getLogger('django')
 
 
-def process_document(file_path, kb_resource):
-    # client = get_opensearch_cluster_client("vector-kb", "ap-southeast-1")
-    # delete_opensearch_index(client, "vector-kb-index")
-    # create_index(client, "vector-kb-index")
-    # create_index_mapping(client, "vector-kb-index")
+def process_document(file_path: str, kb_resource: KbResource):
 
     file_extension = Path(file_path).suffix
     
@@ -39,10 +37,10 @@ def process_document(file_path, kb_resource):
         os.remove(file_path)
         logger.info("File deleted successfully")
     
-    return
+    return None
 
 
-def add_kb_resource(kb_resource):
+def add_kb_resource(kb_resource: KbResource) -> int:
     data = {
         "status": 1
     }
@@ -74,10 +72,10 @@ def add_kb_resource(kb_resource):
 
 
 def read_pdf(file_path):
-    return # List of List of TextChunk
+    return
 
 
-def read_excel(file_path):
+def read_excel(file_path: str) -> List[List[TextChunk]]:
     workbook = load_workbook(filename=file_path, read_only=True)
     text_chunks = []
     
@@ -107,28 +105,25 @@ def read_excel(file_path):
     return text_chunks
 
 
-def add_chunks(text_chunks, metadata, kb_resource_id):
+def add_chunks(text_chunks: List[List[TextChunk]], metadata: str, kb_resource_id: int) -> None:
     opensearch_client = get_opensearch_cluster_client("vector-kb", "ap-southeast-1")
-    openai_client = get_openai_embedding_client()
     
     for page in text_chunks:
         for text_chunk in page:
-            add_chunk(text_chunk, opensearch_client, openai_client, metadata, kb_resource_id)
-    return
+            add_chunk(text_chunk, opensearch_client, metadata, kb_resource_id)
+    return None
 
 
-def add_chunk(text_chunk, opensearch_client, openai_client, metadata, kb_resource_id):
-    embedding = get_embedding(f'{metadata} {text_chunk.content}', openai_client)
+def add_chunk(text_chunk: TextChunk, opensearch_client: OpenSearch, metadata: str, kb_resource_id: int) -> None:
+    embedding = get_embedding(f'{metadata} {text_chunk.content}')
     
-    # Add to postgres
     data = {
         "kb_resource": kb_resource_id,
         "content": text_chunk.content,
     }
     kb_embedding_row = kb_embedding_utils.create_kb_embedding(data)
     logger.info(f'Kb_embedding {kb_embedding_row["id"]} added successfully to Postgres DB')
-    
-    # Add to opensearch
+
     opensearch_id = add_document(opensearch_client, "vector-kb-index", embedding, text_chunk.content, kb_embedding_row["id"])
 
     return

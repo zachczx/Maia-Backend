@@ -1,22 +1,23 @@
 from core.utils.customer_utils import check_customer_exists, update_customer, get_customer_by_phone_number, get_customer_by_email
 from core.utils.customer_engagement_utils import get_customer_engagements_by_customer
-from ..utils.data_models import ProfilingResponse
+from ..utils.data_models import ProfilingResponse, ProfilingRequest
 from .openai_service import get_llm_response
 from ..utils.data_models import Customer, Analytics
 from collections import Counter
+from typing import Optional, List, Dict, Any
 import logging
 import Levenshtein
 
 logger = logging.getLogger("django")
 
-def add_analytics_in_db(customer):
+def update_analytics(customer: Customer) -> Optional[Customer]:
     try:
         updated_customer_data = update_customer(customer.id, customer.to_json_db())
         return updated_customer_data
     except Exception as e:
         return None
 
-def generate_profile_analytics(customer, engagements): # engagement_num, preferred_channel, resolution_status, summary, past aggression
+def generate_profile_analytics(customer: Customer, engagements: List[Dict[str, Any]]) -> Optional[Customer]:
     engagement_num = len(engagements)
     channel_counter = Counter()
     resolution_true_count = 0
@@ -33,7 +34,6 @@ def generate_profile_analytics(customer, engagements): # engagement_num, preferr
         if status:
             resolution_true_count += 1
         summaries.append(summary)
-        logger.info(note)
         notes.append(note)
     
     preferred_channels = [channel for channel, count in channel_counter.items() if count == max(channel_counter.values())]
@@ -44,18 +44,18 @@ def generate_profile_analytics(customer, engagements): # engagement_num, preferr
     analytics = Analytics(engagement_num, preferred_channel, resolution_status, summary=llm_response.summary, past_aggression=llm_response.past_aggression)
     customer.analytics = analytics
     
-    update_record = add_analytics_in_db(customer)
+    update_record = update_analytics(customer)
     
     if update_record is not None:
         return update_record
     
     return None
 
-def calculate_levenshtein_ratio(str1, str2):
+def calculate_levenshtein_ratio(str1: str, str2: str) -> float:
     ratio = Levenshtein.ratio(str1, str2)
     return ratio
 
-def search_similar_customer(customer):
+def search_similar_customer(customer: Customer) -> Dict[str, Any]:
     try:
         customer_record = get_customer_by_phone_number(customer.phone_number)
     except Exception:
@@ -65,9 +65,9 @@ def search_similar_customer(customer):
             return {"exists": False, 'message': 'Customer not found with the given details'}
 
     customer_record_name = f"{customer_record['first_name']} {customer_record['last_name']}"
-    customer_name = f"{customer.first_name} {customer.last_name}"
+    inputted_customer_name = f"{customer.first_name} {customer.last_name}"
     
-    levenshtein_ratio = calculate_levenshtein_ratio(customer_record_name, customer_name)
+    levenshtein_ratio = calculate_levenshtein_ratio(customer_record_name, inputted_customer_name)
     
     if levenshtein_ratio > 0.85:
         return {
@@ -78,9 +78,9 @@ def search_similar_customer(customer):
     else:
         return {"exists": False, 'message': 'Customer not found with the given details'}
 
-def search_customer(request):
+def search_customer(request: ProfilingRequest) -> ProfilingResponse:
     
-    def update_and_return_customer(customer_obj, engagements):
+    def update_and_return_customer(customer_obj: Customer, engagements: List[Dict[str, Any]]):
         updated_customer = generate_profile_analytics(customer_obj, engagements)
         if updated_customer is None:
             return ProfilingResponse(status=0)

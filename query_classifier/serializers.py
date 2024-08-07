@@ -28,7 +28,7 @@ class CategoryExcelProcessorSerializer(serializers.Serializer):
     file = serializers.FileField()
     
     def validate_file(self, value):
-        ext = os.path.splitext(value.name)[1]  # Get file extension
+        ext = os.path.splitext(value.name)[1]
         valid_extensions = ['.xls', '.xlsx']
         if ext.lower() not in valid_extensions:
             raise ValidationError("File is not in Excel format.")

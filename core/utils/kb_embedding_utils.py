@@ -1,13 +1,14 @@
 from core.models import KbEmbedding
 from core.serializers import KbEmbeddingSerializer
 from rest_framework.exceptions import ValidationError
+from typing import List, Dict, Any
 
-def get_all_kb_embeddings():
+def get_all_kb_embeddings() -> List[Dict[str, Any]]:
     embeddings = KbEmbedding.objects.all()
     serializer = KbEmbeddingSerializer(embeddings, many=True)
     return serializer.data
 
-def create_kb_embedding(data):
+def create_kb_embedding(data: Dict[str, Any]) -> Dict[str, Any]:
     serializer = KbEmbeddingSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
@@ -15,7 +16,7 @@ def create_kb_embedding(data):
     else:
         raise ValidationError(serializer.errors)
 
-def get_kb_embedding_by_id(embedding_id):
+def get_kb_embedding_by_id(embedding_id: int) -> Dict[str, Any]:
     try:
         embedding = KbEmbedding.objects.get(id=embedding_id)
         serializer = KbEmbeddingSerializer(embedding)
@@ -23,7 +24,7 @@ def get_kb_embedding_by_id(embedding_id):
     except KbEmbedding.DoesNotExist:
         raise ValidationError({'error': 'Embedding not found'})
 
-def update_kb_embedding(embedding_id, data):
+def update_kb_embedding(embedding_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
     try:
         embedding = KbEmbedding.objects.get(id=embedding_id)
         serializer = KbEmbeddingSerializer(embedding, data=data)
@@ -35,7 +36,7 @@ def update_kb_embedding(embedding_id, data):
     except KbEmbedding.DoesNotExist:
         raise ValidationError({'error': 'Embedding not found'})
 
-def delete_kb_embedding(embedding_id):
+def delete_kb_embedding(embedding_id: int) -> Dict[str, Any]:
     try:
         embedding = KbEmbedding.objects.get(id=embedding_id)
         embedding.delete()
@@ -43,7 +44,7 @@ def delete_kb_embedding(embedding_id):
     except KbEmbedding.DoesNotExist:
         raise ValidationError({'error': 'Embedding not found'})
     
-def delete_kb_embedding_by_resource_id(resource_id):
+def delete_kb_embedding_by_resource_id(resource_id: int) -> Dict[str, Any]:
     try:
         embeddings = KbEmbedding.objects.filter(kb_resource=resource_id)
         if not embeddings.exists():

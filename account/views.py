@@ -3,15 +3,52 @@ from django.contrib.auth import authenticate, login as auth_login
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from .permissions import IsSuperUser
 from rest_framework.permissions import IsAuthenticated
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class RegisterAPIView(APIView):
     permission_classes = [IsAuthenticated, IsSuperUser]
 
-    def post(self, request):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['username', 'email', 'password'],
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username for the new user'),
+                'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='First name of the new user'),
+                'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='Last name of the new user'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email address of the new user'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password for the new user'),
+                'is_staff': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Whether the user should have staff privileges'),
+            }
+        ),
+        responses={
+            201: openapi.Response(
+                description='Registration successful.',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING, description='Success message')
+                    }
+                )
+            ),
+            400: openapi.Response(
+                description='Bad Request',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'error': openapi.Schema(type=openapi.TYPE_STRING, description='Error message')
+                    }
+                )
+            )
+        }
+    )
+    def post(self, request: Request) -> Response:
         username = request.data.get('username')
         first_name = request.data.get('first_name')
         last_name = request.data.get('last_name')
@@ -19,7 +56,7 @@ class RegisterAPIView(APIView):
         password = request.data.get('password')
         is_staff = request.data.get('is_staff')
 
-        if not email or not password or not username:
+        if email is None or password is None or username is None:
             return Response({"error": "Username, email, and password are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         if not email.endswith('@mindef.gov.sg'):
@@ -34,8 +71,40 @@ class RegisterAPIView(APIView):
 
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
-
-    def post(self, request):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['username', 'password'],
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username for login'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password for login'),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description='Successful login',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='Refresh token'),
+                        'access': openapi.Schema(type=openapi.TYPE_STRING, description='Access token'),
+                        'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='First name of the user'),
+                        'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='Last name of the user'),
+                    }
+                )
+            ),
+            401: openapi.Response(
+                description='Unauthorized',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'error': openapi.Schema(type=openapi.TYPE_STRING, description='Error message')
+                    }
+                )
+            )
+        }
+    )
+    def post(self, request: Request) -> Response:
         username = request.data.get('username')
         password = request.data.get('password')
         user = authenticate(request, username=username, password=password)

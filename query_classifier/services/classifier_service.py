@@ -2,25 +2,22 @@ from .openai_service import get_query_summary
 from core.utils.opensearch_utils import search_vector_db
 from .openai_service import get_classifier_completions
 from .redact_service import redact_text
+from ..utils.data_models import QueryRequest, QueryResponse
 import logging
 
 logger = logging.getLogger('django')
 
-def query_classifier(query_data):
-    # redact query 
+def query_classifier(query_data: QueryRequest) -> QueryResponse:
     query_data.case_information = redact_text(query_data.case_information)
     
-    # send query to get summarised
     if query_data.history != None or query_data.history!=[]:
         query_list = get_query_summary(query_data.case_information)
     
-        # get relevant context for each question
         contexts = {}
         for summarised_query in query_list:
             context = search_vector_db(summarised_query)
             contexts[summarised_query] = context
         
-    # send context + query + chat history to get classified + response
     query_response = get_classifier_completions(query_data, contexts)
     
     return query_response

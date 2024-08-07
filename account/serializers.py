@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from typing import Any, Dict
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -8,7 +9,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'password']
 
-    def create(self, validated_data):
+    def create(self, validated_data: Dict[str, Any]) -> User:
         user = User(
             email=validated_data['email'],
             username=validated_data['email']

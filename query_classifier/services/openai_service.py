@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
-from ..utils.data_models import QueryResponse
+from ..utils.data_models import QueryResponse, QueryRequest
 from core.utils.openai_utils import get_openai_llm_client
+from typing import List, Optional, Dict, Any, Tuple
 import logging
 import json
 import re
@@ -9,7 +10,7 @@ import os
 
 logger = logging.getLogger('django')
 
-def read_csv_file(file_type): # file_type = website or category
+def read_csv_file(file_type: str) -> List[str]:
     file_name = ''
     
     if file_type == "website":
@@ -28,7 +29,7 @@ def read_csv_file(file_type): # file_type = website or category
     
     return values
 
-def read_prompt_file():
+def read_prompt_file() -> Optional[str]:
     prompt_file_path = os.path.join('query_classifier', 'config', 'prompt.txt')
 
     try:
@@ -38,7 +39,7 @@ def read_prompt_file():
     except FileNotFoundError:
         return None
 
-def get_query_summary(query):
+def get_query_summary(query: str) -> List[str]:
     prompt = ChatPromptTemplate.from_messages(
         [
             (
@@ -64,7 +65,7 @@ def get_query_summary(query):
     return query_list
 
 
-def escape_characters(conversation):
+def escape_characters(conversation: List[List[str]]) -> List[List[str]]:
     unescaped_curly_open = re.compile(r'(?<!{){(?!{)')
     unescaped_curly_close = re.compile(r'(?<!})}(?!})')
     unescaped_quote = re.compile(r'(?<!\\)"')
@@ -78,7 +79,7 @@ def escape_characters(conversation):
         
     return conversation
 
-def format_openai_response(openai_response, messages, context, query):
+def format_openai_response(openai_response: Dict[str, Any], messages: List[Tuple[str]], context: str, query: str) -> QueryResponse:
     
     case_title = openai_response.get("case_title", "Unknown")
     case_type = openai_response.get("case_type", "Unknown")
@@ -117,13 +118,12 @@ def format_openai_response(openai_response, messages, context, query):
     )
 
 
-def get_classifier_completions(query_data, context=None):
+def get_classifier_completions(query_data: QueryRequest,  context: Optional[List[str]] = None) -> QueryResponse:
     delimiter = "####"
     websites = read_csv_file("website")
     categories = read_csv_file("category")
     system_message = read_prompt_file()
     
-    # replace values in prompt
     system_message = system_message.replace("{delimiter}", delimiter)
     system_message = system_message.replace("{websites}", ", ".join(websites))
     system_message = system_message.replace("{categories}", "\n".join(categories))

@@ -2,7 +2,7 @@ import boto3
 import json
 from botocore.exceptions import ClientError
 
-def get_secret(secret_key):
+def get_secret(secret_key: str) -> str:
     secret_name = "prod/maia/backend"
     region_name = "ap-southeast-1"
 

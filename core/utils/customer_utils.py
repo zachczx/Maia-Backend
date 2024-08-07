@@ -2,13 +2,14 @@ from core.models import Customer
 from core.serializers import CustomerSerializer
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
+from typing import List, Dict, Any
 
-def get_all_customers():
+def get_all_customers() -> List[Dict[str, Any]]:
     customers = Customer.objects.all()
     serializer = CustomerSerializer(customers, many=True)
     return serializer.data
 
-def create_customer(data):
+def create_customer(data: Dict[str, Any]) -> Dict[str, Any]:
     if check_customer_exists(data.get('first_name'), 
                              data.get('last_name'), 
                              data.get('phone_number'), 
@@ -23,7 +24,7 @@ def create_customer(data):
     else:
         raise ValidationError(serializer.errors)
 
-def get_customer_by_id(customer_id):
+def get_customer_by_id(customer_id: int) -> Dict[str, Any]:
     try:
         customer = Customer.objects.get(id=customer_id)
         serializer = CustomerSerializer(customer)
@@ -31,7 +32,7 @@ def get_customer_by_id(customer_id):
     except Customer.DoesNotExist:
         raise ValidationError({'error': 'Customer not found'})
     
-def get_customer_by_email(email):
+def get_customer_by_email(email: str) -> Dict[str, Any]:
     try:
         customer = Customer.objects.get(email=email)
         serializer = CustomerSerializer(customer)
@@ -39,7 +40,7 @@ def get_customer_by_email(email):
     except Customer.DoesNotExist:
         raise ValidationError({'error': 'Customer not found'})
 
-def get_customer_by_phone_number(phone_number):
+def get_customer_by_phone_number(phone_number: int) -> Dict[str, Any]:
     try:
         customer = Customer.objects.get(phone_number=phone_number)
         serializer = CustomerSerializer(customer)
@@ -47,7 +48,7 @@ def get_customer_by_phone_number(phone_number):
     except Customer.DoesNotExist:
         raise ValidationError({'error': 'Customer not found'})
 
-def update_customer(customer_id, data):
+def update_customer(customer_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
     try:
         customer = Customer.objects.get(id=customer_id)
         serializer = CustomerSerializer(customer, data=data)
@@ -59,7 +60,7 @@ def update_customer(customer_id, data):
     except Customer.DoesNotExist:
         raise ValidationError({'error': 'Customer not found'})
 
-def delete_customer(customer_id):
+def delete_customer(customer_id: int) -> Dict[str, Any]:
     try:
         customer = Customer.objects.get(id=customer_id)
         customer.delete()
@@ -67,7 +68,7 @@ def delete_customer(customer_id):
     except Customer.DoesNotExist:
         raise ValidationError({'error': 'Customer not found'})
 
-def check_customer_exists(first_name, last_name, country_code, phone_number, email):
+def check_customer_exists(first_name: str, last_name: str, country_code: int, phone_number: int, email: str) -> Dict[str, Any]:
     try:
         customer = Customer.objects.get(
             Q(first_name__iexact=first_name) &

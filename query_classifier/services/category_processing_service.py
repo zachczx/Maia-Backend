@@ -1,10 +1,11 @@
+from typing import Tuple
 import pandas as pd
 import os
 import logging
 
 logger = logging.getLogger("django")
 
-def process_excel(file_path):
+def process_excel(file_path: str) -> Tuple[bool, str]:
     try:
         df = pd.read_excel(file_path)
 

@@ -1,12 +1,11 @@
-from collections import deque
 from channels.generic.websocket import AsyncWebsocketConsumer
 from core.utils.openai_utils import get_transcription
-from core.utils.secrets_manager_utils import get_secret
 from .services.openai_service import do_speaker_diarization
 from response_generator.services.chat_service import chat
 from pydub import AudioSegment, silence
+from typing import List, Dict, Any, Optional
+from collections import deque
 import numpy as np
-from openai import OpenAI
 import os
 import json
 import wave
@@ -16,7 +15,6 @@ import uuid
 
 logger = logging.getLogger('django')
 
-# Parameters for audio processing
 ENERGY_THRESHOLD = 50
 SAMPLE_WIDTH = 2
 CHANNELS = 1
@@ -27,23 +25,23 @@ class Transcript:
         self.past_transcript_dict = []
         self.transcript_dict = []
 
-    def change_transcript(self, transcript_with_speakers):
+    def update_transcript(self, transcript_with_speakers: str) -> None:
         self.transcript_dict = []
-        speaker = "caller"
-        speaker_list = transcript_with_speakers.split("|")
+        curr_speaker = "caller"
+        content_list = transcript_with_speakers.split("|")
         
-        for speaker_content in speaker_list:
-            if speaker == "agent":
-                speaker = "caller"
+        for speaker_content in content_list:
+            if curr_speaker == "agent":
+                curr_speaker = "caller"
             else:
-                speaker = "agent"
+                curr_speaker = "agent"
 
-            self.transcript_dict.append({"role": speaker, "content": speaker_content})
+            self.transcript_dict.append({"role": curr_speaker, "content": speaker_content})
 
-    def add_suggestion(self, suggestion, transcript):
+    def add_suggestion(self, suggestion: str) -> None:
         self.transcript_dict.append({"role": "suggestion", "content": suggestion})
 
-    def get_transcript(self):
+    def get_transcript(self) -> List[Dict[str, Any]]:
         return self.transcript_dict
 
 class AudioConsumer(AsyncWebsocketConsumer):
@@ -53,15 +51,15 @@ class AudioConsumer(AsyncWebsocketConsumer):
         self.transcript = Transcript()
         self.processing = False
 
-    async def connect(self):
+    async def connect(self) -> None:
         await self.accept()
         logger.info("WebSocket connection established.")
         asyncio.create_task(self.process_audio_chunks())
 
-    async def disconnect(self, close_code):
+    async def disconnect(self, close_code: str) -> None:
         logger.info(f"WebSocket disconnected with close code: {close_code}")
 
-    async def receive(self, text_data=None, bytes_data=None):
+    async def receive(self, text_data: Optional[str] = None, bytes_data: Optional[bytes] = None) -> None:
         if bytes_data:
             self.audio_chunks.append(bytes_data)
             
@@ -70,17 +68,17 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 data = json.loads(text_data)
                 if data.get("type") == "suggestion_request":
                     self.audio_chunks.clear()
-                    suggestion = chat(data["transcript"], True)
-                    self.transcript.add_suggestion(suggestion, data["transcript"])
+                    suggestion = chat(chat_history=data["transcript"], call_assistant=True)
+                    self.transcript.add_suggestion(suggestion)
                     await self.send_transcript(self.transcript.get_transcript())
             except json.JSONDecodeError as e:
                 logger.error(f"JSON decode error: {e}")
             except Exception as e:
                 logger.error(f"Error handling text data: {e}")
 
-    async def process_audio_chunks(self):
+    async def process_audio_chunks(self) -> None:
         while True:
-            await asyncio.sleep(1)  # Wait for 1 second
+            await asyncio.sleep(1)
             if self.audio_chunks and not self.processing:
                 self.processing = True
                 combined_audio = b''.join(self.audio_chunks)
@@ -88,7 +86,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 if len(combined_audio) >= RATE * SAMPLE_WIDTH * CHANNELS * 0.1:
                     if self.is_meaningful_audio(combined_audio):
                         transcript = await self.process_audio_chunk(combined_audio)
-                        self.transcript.change_transcript(transcript)
+                        self.transcript.update_transcript(transcript)
                         logger.info(self.transcript.get_transcript())
                         await self.send_transcript(self.transcript.get_transcript())
 
@@ -97,7 +95,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
 
                 self.processing = False
 
-    def is_meaningful_audio(self, audio_data):
+    def is_meaningful_audio(self, audio_data: bytes) -> bool:
         audio_segment = AudioSegment(
             data=audio_data,
             sample_width=SAMPLE_WIDTH,
@@ -105,12 +103,10 @@ class AudioConsumer(AsyncWebsocketConsumer):
             channels=CHANNELS
         )
         
-        # Detect silence
         silent_ranges = silence.detect_silence(audio_segment, min_silence_len=1000, silence_thresh=-40)
         if len(silent_ranges) == 1 and silent_ranges[0][0] == 0 and silent_ranges[0][1] == len(audio_segment):
             return False
 
-        # Calculate energy of the audio
         audio_array = np.frombuffer(audio_data, dtype=np.int16)
         energy = np.sum(audio_array**2) / len(audio_array)
         if energy < ENERGY_THRESHOLD:
@@ -118,7 +114,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
 
         return True
 
-    async def process_audio_chunk(self, audio_data):
+    async def process_audio_chunk(self, audio_data: bytes) -> str:
         wav_filename = f'temp_audio_{uuid.uuid4()}.wav'
         
         with wave.open(wav_filename, 'wb') as wf:
@@ -143,7 +139,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
         return transcription_with_speakers
 
 
-    async def send_transcript(self, transcription):
+    async def send_transcript(self, transcription: str) -> None:
         try:
             await self.send(text_data=json.dumps({
                 'type': 'transcript',

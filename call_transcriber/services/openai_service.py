@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger('django')
 
-def do_speaker_diarization(transcript):
+def do_speaker_diarization(transcript: str) -> str:
     prompt = ChatPromptTemplate.from_messages(
         [
             (

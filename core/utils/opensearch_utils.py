@@ -5,16 +5,17 @@ from requests_aws4auth import AWS4Auth
 from opensearchpy import RequestsHttpConnection
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
+from typing import List
 import boto3
 import logging
 
 logger = logging.getLogger('django')
+AWS_ACCESS_KEY_ID = get_secret("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = get_secret("AWS_SECRET_ACCESS_KEY")
 
-def get_opensearch_cluster_client(domain_name, region):
-    AWS_ACCESS_KEY_ID = get_secret("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = get_secret("AWS_SECRET_ACCESS_KEY")
+def get_opensearch_cluster_client(domain_name: str, region: str) -> OpenSearch:
+    
     aws_auth = AWS4Auth(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, region, 'es', session_token=None)
-
     opensearch_endpoint = get_opensearch_endpoint(domain_name, region)
 
     opensearch_client = OpenSearch(
@@ -30,7 +31,7 @@ def get_opensearch_cluster_client(domain_name, region):
     return opensearch_client
 
 
-def get_opensearch_endpoint(domain_name, region):
+def get_opensearch_endpoint(domain_name: str, region: str) -> str:
     client = boto3.client('es', region_name=region)
     response = client.describe_elasticsearch_domain(
         DomainName=domain_name
@@ -39,11 +40,11 @@ def get_opensearch_endpoint(domain_name, region):
     return response['DomainStatus']['Endpoint']
 
 
-def check_opensearch_index(opensearch_client, index_name):
+def check_opensearch_index(opensearch_client: OpenSearch, index_name: str) -> bool:
     return opensearch_client.indices.exists(index=index_name)
 
 
-def create_index(opensearch_client, index_name):
+def create_index(opensearch_client: OpenSearch, index_name: str) -> bool:
     settings = {
         "settings": {
             "index": {
@@ -57,7 +58,7 @@ def create_index(opensearch_client, index_name):
     return bool(response['acknowledged'])
 
 
-def create_index_mapping(opensearch_client, index_name):
+def create_index_mapping(opensearch_client: OpenSearch, index_name: str) -> bool:
     response = opensearch_client.indices.put_mapping(
         index=index_name,
         body={
@@ -79,7 +80,7 @@ def create_index_mapping(opensearch_client, index_name):
     return bool(response['acknowledged'])
 
 
-def add_document(opensearch_client, index_name, embedding, content, postgresql_id):
+def add_document(opensearch_client: OpenSearch, index_name: str, embedding: List[float], content: str, postgresql_id: int) -> int:
     document_data = {
         "embedding": embedding,
         "content": content,
@@ -90,7 +91,7 @@ def add_document(opensearch_client, index_name, embedding, content, postgresql_i
     return response['_id']
 
 
-def delete_opensearch_index(opensearch_client, index_name):
+def delete_opensearch_index(opensearch_client: str, index_name: str) -> bool:
     logger.info(f"Trying to delete index {index_name}")
     try:
         response = opensearch_client.indices.delete(index=index_name)
@@ -101,11 +102,9 @@ def delete_opensearch_index(opensearch_client, index_name):
         return True
 
 
-def search_vector_db(query, _is_aoss=False):
-    AWS_ACCESS_KEY_ID = get_secret("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = get_secret("AWS_SECRET_ACCESS_KEY")
+def search_vector_db(query: str, _is_aoss=False) -> List[str]:
+    
     aws_auth = AWS4Auth(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, "ap-southeast-1", 'es', session_token=None)
-
     opensearch_endpoint = get_opensearch_endpoint("vector-kb", "ap-southeast-1")
 
     docsearch = OpenSearchVectorSearch(

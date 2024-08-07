@@ -8,6 +8,8 @@ from .serializers import CustomerProfileSerializer
 from .utils.data_models import ProfilingRequest
 from .services.customer_search_service import search_customer
 from rest_framework.permissions import IsAuthenticated
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 import logging
 
 logger = logging.getLogger("django")
@@ -16,6 +18,30 @@ logger = logging.getLogger("django")
 class CustomerProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Search for a customer profile based on provided details.",
+        request_body=CustomerProfileSerializer,
+        responses={
+            200: openapi.Response(
+                description="Search results for the customer profile",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'data': openapi.Schema(type=openapi.TYPE_OBJECT, description='Customer profile data')
+                    }
+                )
+            ),
+            400: openapi.Response(
+                description="Invalid request data",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'error': openapi.Schema(type=openapi.TYPE_STRING, description='Error message')
+                    }
+                )
+            )
+        }
+    )
     def post(self, request, *args, **kwargs):
         serializer = CustomerProfileSerializer(data=request.data)
         if serializer.is_valid():
@@ -25,8 +51,8 @@ class CustomerProfileAPIView(APIView):
             phone_number = serializer.validated_data.get('phone_number', None)
             email = serializer.validated_data.get("email", None)
 
-            customer = ProfilingRequest(first_name, last_name, country_code, phone_number, email)
-            response = search_customer(customer)
+            profilingRequest = ProfilingRequest(first_name, last_name, country_code, phone_number, email)
+            response = search_customer(profilingRequest)
             
             return Response(data=response.to_json(), status=status.HTTP_200_OK)
         else:

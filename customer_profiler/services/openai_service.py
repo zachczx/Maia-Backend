@@ -1,11 +1,12 @@
-from core.utils.openai_utils import get_openai_llm_client, get_openai_moderation_client
+from core.utils.openai_utils import get_openai_llm_client
 from ..utils.data_models import LLMResponse
-import logging
 from langchain_core.prompts import ChatPromptTemplate
+from typing import List
+import logging
 
 logger = logging.getLogger("django")
 
-def get_llm_response(summaries, notes):
+def get_llm_response(summaries: List[str], notes: str) -> LLMResponse:
     
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
