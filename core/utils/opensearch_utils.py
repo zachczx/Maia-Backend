@@ -1,17 +1,20 @@
 from core.utils.openai_utils import get_openai_embedding_client
-from core.utils.secrets_manager_utils import get_secret
 from langchain_community.vectorstores import OpenSearchVectorSearch
 from requests_aws4auth import AWS4Auth
 from opensearchpy import RequestsHttpConnection
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
 from typing import List
+from dotenv import load_dotenv
 import boto3
 import logging
+import os
+
+load_dotenv()
 
 logger = logging.getLogger('django')
-AWS_ACCESS_KEY_ID = get_secret("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = get_secret("AWS_SECRET_ACCESS_KEY")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 def get_opensearch_cluster_client(domain_name: str, region: str) -> OpenSearch:
     

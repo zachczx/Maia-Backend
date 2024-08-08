@@ -3,12 +3,14 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain.chains import OpenAIModerationChain
 from openai import OpenAI as BaseOpenAI
-from core.utils.secrets_manager_utils import get_secret
 from typing import Dict, List
+from dotenv import load_dotenv
 import logging
+import os
 
+load_dotenv()
 
-OPENAI_API_KEY = get_secret("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 logger = logging.getLogger('django')
 
 def get_openai_moderation_client() -> OpenAIModerationChain:
